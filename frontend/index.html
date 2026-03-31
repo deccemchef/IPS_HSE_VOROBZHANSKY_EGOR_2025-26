@@ -21,7 +21,7 @@
     </nav>
 
     <section id="simulator-tab" class="tab-content active">
-        <main class="layout">
+        <main class="simulator-layout">
             <section class="panel controls">
                 <h2>Управление</h2>
 
@@ -30,16 +30,54 @@
                     <select id="endpoint-select">
                         <option value="/test-demand">Проверка спроса</option>
                         <option value="/test-optimizer">Проверка оптимизатора</option>
-                        <option value="/test-simulation">Проверка симуляции</option>
+                        <option value="/test-simulation" selected>Проверка симуляции</option>
                     </select>
                 </div>
 
                 <button id="run-btn">Запустить</button>
+                <button id="download-btn" class="secondary-btn" disabled>Скачать отчёт .txt</button>
+            </section>
+
+            <section class="panel battlefield-panel">
+                <h2>Игровое поле</h2>
+
+                <div id="battlefield" class="battlefield">
+                    <div class="firm-card" id="firm-card">
+                        <div class="firm-title">Monopolist / Factory</div>
+                        <div class="firm-mode">Режим: ожидание запуска</div>
+
+                        <div class="firm-stats">
+                            <div class="mini-stat">
+                                <span class="mini-stat-label">Q</span>
+                                <span class="mini-stat-value">—</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-stat-label">Revenue</span>
+                                <span class="mini-stat-value">—</span>
+                            </div>
+                            <div class="mini-stat">
+                                <span class="mini-stat-label">Profit</span>
+                                <span class="mini-stat-value">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="buyers-zone">
+                        <div class="buyers-zone-title">Покупатели</div>
+                        <div id="buyers-grid" class="buyers-grid">
+                            <div class="placeholder-text">
+                                Запусти симуляцию, чтобы увидеть участников рынка.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section class="panel output">
-                <h2>Результат</h2>
-                <pre id="result-box">Нажми "Запустить", чтобы получить данные с backend.</pre>
+                <h2>Отчёт</h2>
+                <div id="result-box" class="report-box">
+                    Нажми «Запустить», чтобы получить понятный текстовый отчёт по модели.
+                </div>
             </section>
         </main>
     </section>
