@@ -74,6 +74,16 @@ body {
     gap: 20px;
 }
 
+.simulator-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+}
+
+.output {
+    grid-column: 1 / -1;
+}
+
 .panel {
     background: white;
     border-radius: 14px;
@@ -98,6 +108,7 @@ label {
 
 select,
 button {
+    width: 100%;
     padding: 10px 12px;
     font-size: 16px;
     border-radius: 8px;
@@ -113,22 +124,229 @@ select {
     background: #2563eb;
     color: white;
     cursor: pointer;
+    margin-bottom: 10px;
 }
 
 #run-btn:hover {
     background: #1d4ed8;
 }
 
-#result-box {
-    margin: 0;
+.secondary-btn {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #1f2937;
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #f8fafc;
+}
+
+.secondary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.report-box {
     white-space: pre-wrap;
     word-break: break-word;
     background: #111827;
     color: #f9fafb;
-    padding: 16px;
+    padding: 18px;
     border-radius: 10px;
-    min-height: 300px;
+    min-height: 360px;
     overflow: auto;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.battlefield-panel {
+    min-height: 520px;
+}
+
+.battlefield {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.firm-card {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 220px;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+.firm-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.firm-mode {
+    font-size: 15px;
+    opacity: 0.92;
+    margin-bottom: 20px;
+}
+
+.firm-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.mini-stat {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.mini-stat-label {
+    display: block;
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 4px;
+}
+
+.mini-stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.buyers-zone {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 320px;
+}
+
+.buyers-zone-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #0f172a;
+}
+
+.buyers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.buyer-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.buyer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+}
+
+.buyer-card.segment-A {
+    border-color: #60a5fa;
+}
+
+.buyer-card.segment-B {
+    border-color: #34d399;
+}
+
+.buyer-card.segment-C {
+    border-color: #f59e0b;
+}
+
+.buyer-card.status-bought {
+    background: #f0fdf4;
+}
+
+.buyer-card.status-skipped {
+    background: #f8fafc;
+    opacity: 0.9;
+}
+
+.buyer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.buyer-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.status-badge {
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
+.status-badge.waiting {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.status-badge.bought {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+.status-badge.skipped {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.buyer-meta {
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.buyer-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.buyer-stat {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+
+.buyer-stat-label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 3px;
+}
+
+.buyer-stat-value {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.placeholder-text {
+    color: #6b7280;
+    padding: 18px 4px;
+    line-height: 1.7;
 }
 
 .theory-page {
@@ -228,6 +446,16 @@ select {
     border: 1px solid #e5e7eb;
     border-radius: 14px;
     padding: 10px;
+}
+
+@media (max-width: 1000px) {
+    .simulator-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .battlefield {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 900px) {
