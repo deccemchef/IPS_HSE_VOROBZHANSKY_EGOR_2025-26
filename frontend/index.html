@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopolist Strategy Studio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+    <header class="header">
+        <h1>Monopolist Strategy Studio</h1>
+        <p class="subtitle">
+            Интерактивный симулятор монополии и ценовой дискриминации
+        </p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="simulator-tab">Симулятор</button>
+        <button class="tab-btn" data-tab="theory-tab">Теория</button>
+    </nav>
+
+    <section id="simulator-tab" class="tab-content active">
+        <main class="layout">
+            <section class="panel controls">
+                <h2>Управление</h2>
+
+                <div class="field">
+                    <label for="endpoint-select">Тестовый endpoint</label>
+                    <select id="endpoint-select">
+                        <option value="/test-demand">Проверка спроса</option>
+                        <option value="/test-optimizer">Проверка оптимизатора</option>
+                        <option value="/test-simulation">Проверка симуляции</option>
+                    </select>
+                </div>
+
+                <button id="run-btn">Запустить</button>
+            </section>
+
+            <section class="panel output">
+                <h2>Результат</h2>
+                <pre id="result-box">Нажми "Запустить", чтобы получить данные с backend.</pre>
+            </section>
+        </main>
+    </section>
+
+    <section id="theory-tab" class="tab-content">
+        <div class="theory-page">
+            <aside class="theory-sidebar">
+                <h2>Содержание</h2>
+                <a href="#monopoly">1. Монополия</a>
+                <a href="#notation">2. Основные обозначения</a>
+                <a href="#consumer-choice">3. Выбор покупателя</a>
+                <a href="#price-discrimination">4. Ценовая дискриминация</a>
+                <a href="#pd1">4.1. Первая степень</a>
+                <a href="#pd2">4.2. Вторая степень</a>
+                <a href="#pd3">4.3. Третья степень</a>
+                <a href="#metrics">5. Экономические показатели</a>
+                <a href="#connection">6. Связь теории с симулятором</a>
+            </aside>
+
+            <main class="theory-content panel">
+                <section id="monopoly" class="theory-section">
+                    <h2>1. Монополия</h2>
+                    <p>
+                        <strong>Монополия</strong> — это рыночная структура, при которой товар или услугу
+                        предлагает один продавец, не имеющий близких конкурентов. Монополист сталкивается
+                        со всем рыночным спросом и понимает, что объём выпуска и цена взаимосвязаны:
+                        если он хочет продать больше, ему обычно приходится снижать цену.
+                    </p>
+                    <p>
+                        В стандартной модели монополист выбирает объём, исходя из условия
+                        <strong>MR = MC</strong>, то есть предельная выручка должна быть равна
+                        предельным издержкам. После этого цена определяется по кривой спроса.
+                    </p>
+                    <p>
+                        Как правило, по сравнению с конкурентным рынком монополист продаёт меньше
+                        и по более высокой цене. Это ведёт к перераспределению излишка в пользу фирмы
+                        и к появлению <strong>DWL</strong> — потерь общественного благосостояния.
+                    </p>
+
+                    <div class="graph-block">
+                        <h3>График базовой монополии</h3>
+                        <p class="graph-caption">
+                            На схеме показаны спрос, предельная выручка, предельные издержки, монопольные
+                            цена и объём, а также потребительский излишек, прибыль фирмы и потери
+                            общественного благосостояния.
+                        </p>
+
+                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
+                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
+
+                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
+                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
+
+                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
+                            <text x="610" y="372" font-size="18" fill="#1f2937">D</text>
+
+                            <line x1="130" y1="110" x2="520" y2="440" stroke="#7c3aed" stroke-width="3"/>
+                            <text x="490" y="430" font-size="18" fill="#7c3aed">MR</text>
+
+                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
+                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
+
+                            <line x1="355" y1="300" x2="355" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
+                            <text x="343" y="462" font-size="18" fill="#2563eb">Qm</text>
+
+                            <line x1="80" y1="234" x2="355" y2="234" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
+                            <text x="42" y="240" font-size="18" fill="#2563eb">Pm</text>
+
+                            <line x1="475" y1="300" x2="475" y2="440" stroke="#6b7280" stroke-width="2" stroke-dasharray="5 5"/>
+                            <text x="463" y="462" font-size="18" fill="#6b7280">Qc</text>
+
+                            <polygon points="130,110 355,234 355,300" fill="#86efac" fill-opacity="0.85"/>
+                            <text x="235" y="215" font-size="20" font-weight="700" fill="#166534">CS</text>
+
+                            <rect x="80" y="234" width="275" height="66" fill="#93c5fd" fill-opacity="0.85"/>
+                            <text x="170" y="275" font-size="20" font-weight="700" fill="#1d4ed8">Profit / PS</text>
+
+                            <polygon points="355,300 355,234 475,300" fill="#fdba74" fill-opacity="0.9"/>
+                            <text x="385" y="284" font-size="20" font-weight="700" fill="#c2410c">DWL</text>
+
+                            <circle cx="355" cy="300" r="5" fill="#2563eb"/>
+                            <circle cx="355" cy="234" r="5" fill="#2563eb"/>
+                            <circle cx="475" cy="300" r="5" fill="#6b7280"/>
+
+                            <rect x="510" y="90" width="180" height="130" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
+                            <rect x="530" y="110" width="18" height="18" fill="#86efac"/>
+                            <text x="558" y="124" font-size="16" fill="#111827">Consumer Surplus</text>
+
+                            <rect x="530" y="142" width="18" height="18" fill="#93c5fd"/>
+                            <text x="558" y="156" font-size="16" fill="#111827">Profit / PS</text>
+
+                            <rect x="530" y="174" width="18" height="18" fill="#fdba74"/>
+                            <text x="558" y="188" font-size="16" fill="#111827">Deadweight Loss</text>
+                        </svg>
+                    </div>
+                </section>
+
+                <section id="notation" class="theory-section">
+                    <h2>2. Основные обозначения</h2>
+
+                    <p><strong>MB(k)</strong> — marginal benefit, предельная полезность k-й единицы товара.</p>
+                    <p>
+                        Это ценность, которую покупатель получает именно от ещё одной дополнительной единицы.
+                        Обычно предполагается, что по мере насыщения потребности предельная полезность снижается.
+                    </p>
+
+                    <p><strong>V(q)</strong> — total value, суммарная ценность q единиц товара.</p>
+                    <p class="formula">V(q) = MB(1) + MB(2) + ... + MB(q)</p>
+
+                    <p><strong>T(q)</strong> — total payment, общий платёж покупателя за q единиц.</p>
+                    <p>
+                        Именно функция <strong>T(q)</strong> меняется в зависимости от режима ценообразования:
+                        единая цена, двухчастный тариф, сегментированная цена или персонализированная оплата.
+                    </p>
+
+                    <p><strong>U(q)</strong> — utility, чистая полезность покупателя.</p>
+                    <p class="formula">U(q) = V(q) - T(q)</p>
+                </section>
+
+                <section id="consumer-choice" class="theory-section">
+                    <h2>3. Выбор покупателя</h2>
+                    <p>
+                        В модели покупатель сравнивает несколько возможных вариантов покупки:
+                        0 единиц, 1 единицу, 2 единицы и так далее до максимально допустимого объёма.
+                    </p>
+                    <p>
+                        Для каждого объёма q рассчитываются:
+                    </p>
+                    <ul>
+                        <li>суммарная ценность <strong>V(q)</strong>;</li>
+                        <li>общий платёж <strong>T(q)</strong>;</li>
+                        <li>чистая полезность <strong>U(q) = V(q) - T(q)</strong>.</li>
+                    </ul>
+                    <p class="formula">q* = argmax U(q)</p>
+                </section>
+
+                <section id="price-discrimination" class="theory-section">
+                    <h2>4. Ценовая дискриминация</h2>
+                    <p>
+                        <strong>Ценовая дискриминация</strong> — это продажа одного и того же товара
+                        разным покупателям по разным ценам, если различия не объясняются различиями
+                        в издержках. Фирма использует неоднородность спроса, различия в готовности платить
+                        и сегментацию потребителей, чтобы увеличить прибыль.
+                    </p>
+                    <p>
+                        Для осуществления ценовой дискриминации обычно нужны три условия:
+                    </p>
+                    <ul>
+                        <li>у фирмы должна быть рыночная власть;</li>
+                        <li>она должна уметь отличать покупателей или типы сделок;</li>
+                        <li>должна быть ограничена перепродажа между группами покупателей.</li>
+                    </ul>
+                </section>
+
+                <section id="pd1" class="theory-section">
+                    <h2>4.1. Ценовая дискриминация первой степени</h2>
+                    <p>
+                        Это <strong>совершенная ценовая дискриминация</strong>: фирма знает готовность платить
+                        каждого покупателя за каждую единицу товара и может назначать индивидуальную оплату.
+                        В теоретическом пределе каждая единица продаётся по цене, равной предельной полезности.
+                    </p>
+                    <p class="formula">T(q) = V(q)</p>
+                    <p>
+                        Потребительский излишек при этом почти исчезает, а почти весь выигрыш от сделки
+                        переходит фирме. При этом объём продаж может вырасти до эффективного уровня,
+                        и потери благосостояния уменьшаются или исчезают.
+                    </p>
+
+                    <div class="graph-block">
+                        <h3>График ценовой дискриминации первой степени</h3>
+                        <p class="graph-caption">
+                            При совершенной дискриминации фирма изымает почти весь потребительский излишек.
+                            Объём продаж растёт до эффективного уровня, а DWL исчезает или почти исчезает.
+                        </p>
+
+                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
+                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
+
+                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
+                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
+
+                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
+                            <text x="610" y="372" font-size="18" fill="#1f2937">D = MB</text>
+
+                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
+                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
+
+                            <line x1="475" y1="300" x2="475" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
+                            <text x="463" y="462" font-size="18" fill="#2563eb">Q*</text>
+
+                            <polygon points="130,110 475,300 80,300" fill="#93c5fd" fill-opacity="0.8"/>
+                            <text x="230" y="250" font-size="22" font-weight="700" fill="#1d4ed8">PS / Profit</text>
+
+                            <polygon points="130,110 150,121 150,300 130,300" fill="#86efac" fill-opacity="0.65"/>
+                            <text x="138" y="220" font-size="16" font-weight="700" fill="#166534">CS ≈ 0</text>
+
+                            <circle cx="475" cy="300" r="5" fill="#2563eb"/>
+
+                            <rect x="485" y="100" width="200" height="110" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
+                            <rect x="505" y="120" width="18" height="18" fill="#93c5fd"/>
+                            <text x="533" y="134" font-size="16" fill="#111827">Producer Surplus / Profit</text>
+
+                            <rect x="505" y="152" width="18" height="18" fill="#86efac"/>
+                            <text x="533" y="166" font-size="16" fill="#111827">Consumer Surplus ≈ 0</text>
+                        </svg>
+                    </div>
+                </section>
+
+                <section id="pd2" class="theory-section">
+                    <h2>4.2. Ценовая дискриминация второй степени</h2>
+                    <p>
+                        Здесь фирма не знает точно тип каждого покупателя, но предлагает такую структуру
+                        тарифов, при которой покупатели сами раскрывают свои предпочтения через объём
+                        покупки или выбранный тарифный план.
+                    </p>
+                    <p>
+                        В этой модели второй степени используется <strong>двухчастный тариф</strong>:
+                    </p>
+                    <p class="formula">T(0) = 0, &nbsp; T(q &gt; 0) = F + p · q</p>
+                    <p>
+                        Здесь <strong>F</strong> — фиксированная часть тарифа, а <strong>p</strong> —
+                        цена за единицу. Через поштучную цену фирма влияет на объём покупки,
+                        а через фиксированный платёж изымает часть потребительского излишка.
+                    </p>
+
+                    <div class="graph-block">
+                        <h3>График ценовой дискриминации второй степени</h3>
+                        <p class="graph-caption">
+                            При двухчастном тарифе часть излишка изымается через фиксированный взнос F,
+                            а часть остаётся у потребителя. На графике отдельно выделены CS, прибыль
+                            от поштучной цены и дополнительный эффект фиксированного платежа.
+                        </p>
+
+                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
+                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
+
+                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
+                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
+
+                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
+                            <text x="610" y="372" font-size="18" fill="#1f2937">D</text>
+
+                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
+                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
+
+                            <line x1="80" y1="260" x2="700" y2="260" stroke="#2563eb" stroke-width="3"/>
+                            <text x="650" y="252" font-size="18" fill="#2563eb">p</text>
+
+                            <line x1="400" y1="260" x2="400" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
+                            <text x="388" y="462" font-size="18" fill="#2563eb">q</text>
+
+                            <polygon points="130,110 400,260 400,205 170,145" fill="#86efac" fill-opacity="0.78"/>
+                            <text x="225" y="185" font-size="20" font-weight="700" fill="#166534">CS</text>
+
+                            <rect x="80" y="260" width="320" height="40" fill="#93c5fd" fill-opacity="0.82"/>
+                            <text x="170" y="287" font-size="20" font-weight="700" fill="#1d4ed8">Markup Profit</text>
+
+                            <rect x="420" y="180" width="100" height="120" fill="#c4b5fd" fill-opacity="0.88"/>
+                            <text x="438" y="246" font-size="20" font-weight="700" fill="#5b21b6">F</text>
+
+                            <circle cx="400" cy="260" r="5" fill="#2563eb"/>
+
+                            <rect x="510" y="95" width="180" height="140" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
+                            <rect x="530" y="115" width="18" height="18" fill="#86efac"/>
+                            <text x="558" y="129" font-size="16" fill="#111827">Consumer Surplus</text>
+
+                            <rect x="530" y="147" width="18" height="18" fill="#93c5fd"/>
+                            <text x="558" y="161" font-size="16" fill="#111827">Profit from p</text>
+
+                            <rect x="530" y="179" width="18" height="18" fill="#c4b5fd"/>
+                            <text x="558" y="193" font-size="16" fill="#111827">Fixed fee F</text>
+                        </svg>
+                    </div>
+                </section>
+
+                <section id="pd3" class="theory-section">
+                    <h2>4.3. Ценовая дискриминация третьей степени</h2>
+                    <p>
+                        При третьей степени дискриминации фирма делит покупателей на наблюдаемые группы
+                        и назначает каждой группе свою цену. Например, цены могут отличаться для студентов,
+                        пенсионеров, корпоративных клиентов, разных регионов или разных сегментов спроса.
+                    </p>
+                    <p class="formula">T(q) = p[segment] · q</p>
+                    <p>
+                        В твоей модели это реализуется через сегменты <strong>A / B / C</strong>.
+                        Если спрос в одном сегменте менее эластичен, фирма может назначить ему более высокую цену.
+                        Если другой сегмент сильнее реагирует на цену, фирме выгодно снизить для него цену.
+                    </p>
+
+                    <div class="graph-block">
+                        <h3>График ценовой дискриминации третьей степени</h3>
+                        <p class="graph-caption">
+                            На схеме показаны три сегмента с разной ценой: для менее эластичного сегмента
+                            цена выше, для более эластичного — ниже. Это и есть идея PD3:
+                            сегментация покупателей по наблюдаемому признаку.
+                        </p>
+
+                        <svg class="theory-graph" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="760" height="540" fill="#ffffff"/>
+
+                            <line x1="70" y1="460" x2="230" y2="460" stroke="#111827" stroke-width="2"/>
+                            <line x1="70" y1="460" x2="70" y2="80" stroke="#111827" stroke-width="2"/>
+
+                            <line x1="300" y1="460" x2="460" y2="460" stroke="#111827" stroke-width="2"/>
+                            <line x1="300" y1="460" x2="300" y2="80" stroke="#111827" stroke-width="2"/>
+
+                            <line x1="530" y1="460" x2="690" y2="460" stroke="#111827" stroke-width="2"/>
+                            <line x1="530" y1="460" x2="530" y2="80" stroke="#111827" stroke-width="2"/>
+
+                            <text x="145" y="490" font-size="20" fill="#111827">A</text>
+                            <text x="375" y="490" font-size="20" fill="#111827">B</text>
+                            <text x="605" y="490" font-size="20" fill="#111827">C</text>
+
+                            <text x="215" y="455" font-size="16" fill="#111827">Q</text>
+                            <text x="445" y="455" font-size="16" fill="#111827">Q</text>
+                            <text x="675" y="455" font-size="16" fill="#111827">Q</text>
+
+                            <text x="55" y="75" font-size="16" fill="#111827">P</text>
+                            <text x="285" y="75" font-size="16" fill="#111827">P</text>
+                            <text x="515" y="75" font-size="16" fill="#111827">P</text>
+
+                            <line x1="95" y1="130" x2="210" y2="360" stroke="#1f2937" stroke-width="3"/>
+                            <line x1="325" y1="160" x2="440" y2="350" stroke="#1f2937" stroke-width="3"/>
+                            <line x1="555" y1="120" x2="670" y2="395" stroke="#1f2937" stroke-width="3"/>
+
+                            <line x1="70" y1="220" x2="230" y2="220" stroke="#2563eb" stroke-width="3"/>
+                            <line x1="300" y1="255" x2="460" y2="255" stroke="#10b981" stroke-width="3"/>
+                            <line x1="530" y1="305" x2="690" y2="305" stroke="#f59e0b" stroke-width="3"/>
+
+                            <text x="82" y="212" font-size="18" fill="#2563eb">pA</text>
+                            <text x="312" y="247" font-size="18" fill="#10b981">pB</text>
+                            <text x="542" y="297" font-size="18" fill="#f59e0b">pC</text>
+
+                            <line x1="150" y1="220" x2="150" y2="460" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
+                            <line x1="390" y1="255" x2="390" y2="460" stroke="#10b981" stroke-width="2" stroke-dasharray="6 5"/>
+                            <line x1="633" y1="305" x2="633" y2="460" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 5"/>
+
+                            <polygon points="95,130 150,220 150,460 70,460 70,220" fill="#bfdbfe" fill-opacity="0.75"/>
+                            <polygon points="325,160 390,255 390,460 300,460 300,255" fill="#bbf7d0" fill-opacity="0.75"/>
+                            <polygon points="555,120 633,305 633,460 530,460 530,305" fill="#fde68a" fill-opacity="0.75"/>
+
+                            <text x="95" y="195" font-size="16" font-weight="700" fill="#1d4ed8">Высокая цена</text>
+                            <text x="323" y="232" font-size="16" font-weight="700" fill="#047857">Средняя цена</text>
+                            <text x="548" y="335" font-size="16" font-weight="700" fill="#b45309">Низкая цена</text>
+
+                            <rect x="505" y="95" width="190" height="110" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
+                            <rect x="525" y="115" width="18" height="18" fill="#bfdbfe"/>
+                            <text x="553" y="129" font-size="16" fill="#111827">Segment A revenue area</text>
+
+                            <rect x="525" y="147" width="18" height="18" fill="#bbf7d0"/>
+                            <text x="553" y="161" font-size="16" fill="#111827">Segment B revenue area</text>
+
+                            <rect x="525" y="179" width="18" height="18" fill="#fde68a"/>
+                            <text x="553" y="193" font-size="16" fill="#111827">Segment C revenue area</text>
+                        </svg>
+                    </div>
+                </section>
+
+                <section id="metrics" class="theory-section">
+                    <h2>5. Экономические показатели</h2>
+                    <p><strong>Revenue</strong> — выручка фирмы, сумма всех платежей покупателей.</p>
+                    <p><strong>VarCost</strong> — переменные издержки, в модели они равны <strong>mc · Q</strong>.</p>
+                    <p><strong>Profit</strong> — прибыль:</p>
+                    <p class="formula">Profit = Revenue - VarCost</p>
+                    <p><strong>CS</strong> — consumer surplus, потребительский излишек.</p>
+                    <p><strong>PS</strong> — producer surplus, производительный излишек.</p>
+                    <p><strong>W</strong> — общественное благосостояние:</p>
+                    <p class="formula">W = CS + PS</p>
+                </section>
+
+                <section id="connection" class="theory-section">
+                    <h2>6. Связь теории с симулятором</h2>
+                    <p>
+                        Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя
+                        задаётся функция спроса, затем для выбранного режима ценообразования строится функция
+                        платежа <strong>T(q)</strong>, после чего покупатель выбирает объём покупки, который
+                        максимизирует его полезность.
+                    </p>
+                    <p>
+                        После этого индивидуальные решения агрегируются в общие показатели фирмы и рынка:
+                        объём продаж, выручку, прибыль, потребительский излишек, производительный излишек
+                        и общественное благосостояние.
+                    </p>
+                </section>
+            </main>
+        </div>
+    </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
