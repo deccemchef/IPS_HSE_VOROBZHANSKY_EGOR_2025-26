@@ -47,9 +47,7 @@
                 </div>
 
                 <h2>Покупатели</h2>
-
                 <div id="buyers-list"></div>
-
                 <button id="add-buyer-btn" class="secondary-btn">+ Добавить покупателя</button>
 
                 <div class="controls-footer">
@@ -58,40 +56,55 @@
                 </div>
             </section>
 
-            <section class="panel battlefield-panel">
-                <h2>Игровое поле</h2>
-                <div id="battlefield" class="battlefield">
-                    <div class="firm-card" id="firm-card">
-                        <div class="firm-title">Monopolist / Factory</div>
-                        <div class="firm-mode">Режим: ожидание запуска</div>
-                        <div class="firm-stats">
-                            <div class="mini-stat">
-                                <span class="mini-stat-label">Q</span>
-                                <span class="mini-stat-value">—</span>
+            <div class="right-column">
+                <section class="panel battlefield-panel">
+                    <h2>Игровое поле</h2>
+                    <div id="mini-map" class="mini-map"></div>
+                    <div id="battlefield" class="battlefield">
+                        <div class="firm-card" id="firm-card">
+                            <div class="firm-title">Monopolist / Factory</div>
+                            <div class="firm-mode">Режим: ожидание запуска</div>
+                            <div class="firm-stats">
+                                <div class="mini-stat"><span class="mini-stat-label">Q</span><span class="mini-stat-value">—</span></div>
+                                <div class="mini-stat"><span class="mini-stat-label">Revenue</span><span class="mini-stat-value">—</span></div>
+                                <div class="mini-stat"><span class="mini-stat-label">Profit</span><span class="mini-stat-value">—</span></div>
                             </div>
-                            <div class="mini-stat">
-                                <span class="mini-stat-label">Revenue</span>
-                                <span class="mini-stat-value">—</span>
-                            </div>
-                            <div class="mini-stat">
-                                <span class="mini-stat-label">Profit</span>
-                                <span class="mini-stat-value">—</span>
+                        </div>
+                        <div class="buyers-zone">
+                            <div class="buyers-zone-title">Покупатели</div>
+                            <div id="buyers-grid" class="buyers-grid">
+                                <div class="placeholder-text">Добавь покупателей в левой панели.</div>
                             </div>
                         </div>
                     </div>
-                    <div class="buyers-zone">
-                        <div class="buyers-zone-title">Покупатели</div>
-                        <div id="buyers-grid" class="buyers-grid">
-                            <div class="placeholder-text">Запусти симуляцию, чтобы увидеть участников рынка.</div>
-                        </div>
+                </section>
+
+                <div class="panel" id="totals-section">
+                    <h2>Итоги</h2>
+                    <div id="totals-grid" class="totals-grid">
+                        <div class="placeholder-text">Запусти симуляцию, чтобы увидеть итоги.</div>
                     </div>
                 </div>
-            </section>
 
-            <section class="panel output">
-                <h2>Отчёт</h2>
-                <div id="result-box" class="report-box">Нажми «Запустить», чтобы получить отчёт.</div>
-            </section>
+                <div class="panel" id="charts-section">
+                    <h2>Графики</h2>
+                    <div id="charts-container" class="charts-container">
+                        <div class="placeholder-text">Запусти симуляцию, чтобы увидеть графики.</div>
+                    </div>
+                </div>
+
+                <div class="panel" id="table-section">
+                    <h2>Результаты по покупателям</h2>
+                    <div id="buyers-table-container">
+                        <div class="placeholder-text">Запусти симуляцию, чтобы увидеть таблицу.</div>
+                    </div>
+                </div>
+
+                <div class="panel" id="report-section">
+                    <button id="toggle-report-btn" class="secondary-btn">▶ Показать текстовый отчёт</button>
+                    <div id="result-box" class="report-box hidden">Отчёт появится после запуска симуляции.</div>
+                </div>
+            </div>
 
         </main>
     </section>
@@ -112,47 +125,48 @@
             </aside>
 
             <main class="theory-content panel">
+
                 <section id="monopoly" class="theory-section">
                     <h2>1. Монополия</h2>
-                    <p><strong>Монополия</strong> — это рыночная структура, при которой товар или услугу предлагает один продавец, не имеющий близких конкурентов.</p>
-                    <p>В стандартной модели монополист выбирает объём, исходя из условия <strong>MR = MC</strong>.</p>
-                    <p>По сравнению с конкурентным рынком монополист продаёт меньше и по более высокой цене, что ведёт к появлению <strong>DWL</strong>.</p>
+                    <p><strong>Монополия</strong> — рыночная структура, при которой товар предлагает один продавец без близких конкурентов. Монополист сталкивается со всем рыночным спросом.</p>
+                    <p>Монополист выбирает объём по условию <strong>MR = MC</strong>. По сравнению с конкурентным рынком: цена выше, объём меньше, возникают потери благосостояния <strong>DWL</strong>.</p>
                     <div class="graph-block">
                         <h3>График базовой монополии</h3>
-                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
-                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
-                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
-                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
-                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
-                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
-                            <text x="610" y="372" font-size="18" fill="#1f2937">D</text>
-                            <line x1="130" y1="110" x2="520" y2="440" stroke="#7c3aed" stroke-width="3"/>
-                            <text x="490" y="430" font-size="18" fill="#7c3aed">MR</text>
-                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
-                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
-                            <line x1="355" y1="300" x2="355" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
-                            <text x="343" y="462" font-size="18" fill="#2563eb">Qm</text>
-                            <line x1="80" y1="234" x2="355" y2="234" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
-                            <text x="42" y="240" font-size="18" fill="#2563eb">Pm</text>
-                            <line x1="475" y1="300" x2="475" y2="440" stroke="#6b7280" stroke-width="2" stroke-dasharray="5 5"/>
-                            <text x="463" y="462" font-size="18" fill="#6b7280">Qc</text>
-                            <polygon points="130,110 355,234 355,300" fill="#86efac" fill-opacity="0.85"/>
-                            <text x="235" y="215" font-size="20" font-weight="700" fill="#166534">CS</text>
-                            <rect x="80" y="234" width="275" height="66" fill="#93c5fd" fill-opacity="0.85"/>
-                            <text x="170" y="275" font-size="20" font-weight="700" fill="#1d4ed8">Profit / PS</text>
-                            <polygon points="355,300 355,234 475,300" fill="#fdba74" fill-opacity="0.9"/>
-                            <text x="385" y="284" font-size="20" font-weight="700" fill="#c2410c">DWL</text>
-                            <circle cx="355" cy="300" r="5" fill="#2563eb"/>
-                            <circle cx="355" cy="234" r="5" fill="#2563eb"/>
-                            <circle cx="475" cy="300" r="5" fill="#6b7280"/>
-                            <rect x="510" y="90" width="180" height="130" rx="12" fill="#f9fafb" stroke="#d1d5db"/>
-                            <rect x="530" y="110" width="18" height="18" fill="#86efac"/>
-                            <text x="558" y="124" font-size="16" fill="#111827">Consumer Surplus</text>
-                            <rect x="530" y="142" width="18" height="18" fill="#93c5fd"/>
-                            <text x="558" y="156" font-size="16" fill="#111827">Profit / PS</text>
-                            <rect x="530" y="174" width="18" height="18" fill="#fdba74"/>
-                            <text x="558" y="188" font-size="16" fill="#111827">Deadweight Loss</text>
+                        <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="700" height="460" fill="#fff"/>
+                            <polygon points="50,60 228,180 50,180" fill="#86efac" fill-opacity="0.75"/>
+                            <rect x="50" y="180" width="178" height="120" fill="#93c5fd" fill-opacity="0.75"/>
+                            <polygon points="228,180 228,300 407,300" fill="#fdba74" fill-opacity="0.8"/>
+                            <line x1="50" y1="410" x2="638" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="50" y1="410" x2="50" y2="32" stroke="#111827" stroke-width="2"/>
+                            <polygon points="635,405 644,410 635,415" fill="#111827"/>
+                            <polygon points="45,32 50,23 55,32" fill="#111827"/>
+                            <text x="648" y="415" font-size="15" fill="#111827">Q</text>
+                            <text x="34" y="26" font-size="15" fill="#111827">P</text>
+                            <line x1="50" y1="60" x2="570" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <text x="556" y="406" font-size="14" fill="#111827">D</text>
+                            <line x1="50" y1="60" x2="310" y2="410" stroke="#7c3aed" stroke-width="2.5"/>
+                            <text x="296" y="406" font-size="14" fill="#7c3aed">MR</text>
+                            <line x1="50" y1="300" x2="638" y2="300" stroke="#dc2626" stroke-width="2.5"/>
+                            <text x="608" y="293" font-size="14" fill="#dc2626">MC</text>
+                            <line x1="228" y1="180" x2="228" y2="410" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 4"/>
+                            <line x1="50" y1="180" x2="228" y2="180" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 4"/>
+                            <line x1="407" y1="300" x2="407" y2="410" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="5 4"/>
+                            <circle cx="228" cy="180" r="4" fill="#2563eb"/>
+                            <circle cx="407" cy="300" r="4" fill="#6b7280"/>
+                            <text x="220" y="428" font-size="14" fill="#2563eb">Qm</text>
+                            <text x="399" y="428" font-size="14" fill="#6b7280">Qc</text>
+                            <text x="18" y="184" font-size="14" fill="#2563eb">Pm</text>
+                            <text x="85" y="148" font-size="14" font-weight="700" fill="#166534">CS</text>
+                            <text x="85" y="252" font-size="14" font-weight="700" fill="#1d4ed8">Profit</text>
+                            <text x="248" y="268" font-size="13" font-weight="700" fill="#c2410c">DWL</text>
+                            <rect x="470" y="38" width="185" height="96" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect x="484" y="52" width="14" height="14" fill="#86efac"/>
+                            <text x="504" y="63" font-size="13" fill="#374151">Consumer Surplus</text>
+                            <rect x="484" y="72" width="14" height="14" fill="#93c5fd"/>
+                            <text x="504" y="83" font-size="13" fill="#374151">Profit / PS</text>
+                            <rect x="484" y="92" width="14" height="14" fill="#fdba74"/>
+                            <text x="504" y="103" font-size="13" fill="#374151">Deadweight Loss</text>
                         </svg>
                     </div>
                 </section>
@@ -160,135 +174,183 @@
                 <section id="notation" class="theory-section">
                     <h2>2. Основные обозначения</h2>
                     <p><strong>MB(k)</strong> — предельная полезность k-й единицы товара.</p>
-                    <p><strong>V(q)</strong> — суммарная ценность q единиц товара.</p>
+                    <p><strong>V(q)</strong> — суммарная ценность q единиц:</p>
                     <p class="formula">V(q) = MB(1) + MB(2) + ... + MB(q)</p>
                     <p><strong>T(q)</strong> — общий платёж покупателя за q единиц.</p>
-                    <p><strong>U(q)</strong> — чистая полезность покупателя.</p>
-                    <p class="formula">U(q) = V(q) - T(q)</p>
+                    <p><strong>U(q)</strong> — чистая полезность покупателя:</p>
+                    <p class="formula">U(q) = V(q) − T(q)</p>
                 </section>
 
                 <section id="consumer-choice" class="theory-section">
                     <h2>3. Выбор покупателя</h2>
-                    <p>Покупатель сравнивает варианты 0, 1, 2, ... единиц и выбирает тот объём, который максимизирует полезность.</p>
-                    <p class="formula">q* = argmax U(q)</p>
+                    <p>Покупатель перебирает варианты q = 0, 1, 2, ... и выбирает тот объём, который максимизирует чистую полезность.</p>
+                    <p class="formula">q* = argmax U(q) = argmax [V(q) − T(q)]</p>
                 </section>
 
                 <section id="price-discrimination" class="theory-section">
                     <h2>4. Ценовая дискриминация</h2>
-                    <p><strong>Ценовая дискриминация</strong> — продажа одного товара разным покупателям по разным ценам.</p>
-                    <p>Для её осуществления нужны: рыночная власть, возможность различать покупателей, ограничение перепродажи.</p>
+                    <p><strong>Ценовая дискриминация</strong> — продажа одного товара разным покупателям по разным ценам, не объясняемым разницей в издержках.</p>
+                    <p>Условия: рыночная власть фирмы, возможность различать покупателей, ограничение перепродажи между группами.</p>
                 </section>
 
                 <section id="pd1" class="theory-section">
                     <h2>4.1. Ценовая дискриминация первой степени</h2>
-                    <p>Фирма знает готовность платить каждого покупателя и назначает индивидуальную оплату.</p>
+                    <p>Фирма знает точную готовность платить каждого покупателя за каждую единицу и назначает индивидуальную цену. Потребительский излишек полностью переходит к фирме.</p>
                     <p class="formula">T(q) = V(q)</p>
+                    <p>Фирма продаёт до Q*, где цена (MB) сравнивается с MC. Объём продаж = конкурентному — потерь благосостояния нет.</p>
                     <div class="graph-block">
                         <h3>График PD1</h3>
-                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
-                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
-                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
-                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
-                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
-                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
-                            <text x="610" y="372" font-size="18" fill="#1f2937">D = MB</text>
-                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
-                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
-                            <line x1="475" y1="300" x2="475" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
-                            <text x="463" y="462" font-size="18" fill="#2563eb">Q*</text>
-                            <polygon points="130,110 475,300 80,300" fill="#93c5fd" fill-opacity="0.8"/>
-                            <text x="230" y="250" font-size="22" font-weight="700" fill="#1d4ed8">PS / Profit</text>
-                            <circle cx="475" cy="300" r="5" fill="#2563eb"/>
+                        <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="700" height="460" fill="#fff"/>
+                            <polygon points="50,60 407,300 50,300" fill="#93c5fd" fill-opacity="0.75"/>
+                            <line x1="50" y1="410" x2="638" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="50" y1="410" x2="50" y2="32" stroke="#111827" stroke-width="2"/>
+                            <polygon points="635,405 644,410 635,415" fill="#111827"/>
+                            <polygon points="45,32 50,23 55,32" fill="#111827"/>
+                            <text x="648" y="415" font-size="15" fill="#111827">Q</text>
+                            <text x="34" y="26" font-size="15" fill="#111827">P</text>
+                            <line x1="50" y1="60" x2="570" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <text x="548" y="403" font-size="14" fill="#111827">D = MB</text>
+                            <line x1="50" y1="300" x2="638" y2="300" stroke="#dc2626" stroke-width="2.5"/>
+                            <text x="608" y="293" font-size="14" fill="#dc2626">MC</text>
+                            <line x1="407" y1="300" x2="407" y2="410" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 4"/>
+                            <circle cx="407" cy="300" r="4" fill="#2563eb"/>
+                            <text x="399" y="428" font-size="14" fill="#2563eb">Q*</text>
+                            <text x="140" y="230" font-size="15" font-weight="700" fill="#1d4ed8">PS / Profit</text>
+                            <text x="130" y="250" font-size="13" fill="#1d4ed8">(вся площадь — фирме)</text>
+                            <text x="420" y="280" font-size="13" fill="#166534">CS = 0</text>
+                            <rect x="470" y="38" width="175" height="56" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect x="484" y="52" width="14" height="14" fill="#93c5fd"/>
+                            <text x="504" y="63" font-size="13" fill="#374151">PS / Profit (фирма)</text>
                         </svg>
                     </div>
                 </section>
 
                 <section id="pd2" class="theory-section">
                     <h2>4.2. Ценовая дискриминация второй степени</h2>
-                    <p>Двухчастный тариф: фиксированный взнос плюс цена за единицу.</p>
-                    <p class="formula">T(0) = 0, &nbsp; T(q &gt; 0) = F + p · q</p>
+                    <p>Фирма предлагает двухчастный тариф: фиксированный взнос F плюс цена за единицу p.</p>
+                    <p class="formula">T(0) = 0 &nbsp;&nbsp; T(q &gt; 0) = F + p · q</p>
+                    <p>Через p фирма влияет на объём покупки, через F — изымает часть потребительского излишка.</p>
                     <div class="graph-block">
                         <h3>График PD2</h3>
-                        <svg class="theory-graph" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
-                            <line x1="80" y1="440" x2="700" y2="440" stroke="#111827" stroke-width="2"/>
-                            <line x1="80" y1="440" x2="80" y2="60" stroke="#111827" stroke-width="2"/>
-                            <text x="705" y="446" font-size="18" fill="#111827">Q</text>
-                            <text x="62" y="55" font-size="18" fill="#111827">P</text>
-                            <line x1="130" y1="110" x2="620" y2="380" stroke="#1f2937" stroke-width="3"/>
-                            <text x="610" y="372" font-size="18" fill="#1f2937">D</text>
-                            <line x1="80" y1="300" x2="700" y2="300" stroke="#dc2626" stroke-width="3"/>
-                            <text x="650" y="292" font-size="18" fill="#dc2626">MC</text>
-                            <line x1="80" y1="260" x2="700" y2="260" stroke="#2563eb" stroke-width="3"/>
-                            <text x="650" y="252" font-size="18" fill="#2563eb">p</text>
-                            <line x1="400" y1="260" x2="400" y2="440" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 5"/>
-                            <polygon points="130,110 400,260 400,205 170,145" fill="#86efac" fill-opacity="0.78"/>
-                            <text x="225" y="185" font-size="20" font-weight="700" fill="#166534">CS</text>
-                            <rect x="80" y="260" width="320" height="40" fill="#93c5fd" fill-opacity="0.82"/>
-                            <text x="170" y="287" font-size="20" font-weight="700" fill="#1d4ed8">Markup Profit</text>
-                            <rect x="420" y="180" width="100" height="120" fill="#c4b5fd" fill-opacity="0.88"/>
-                            <text x="438" y="246" font-size="20" font-weight="700" fill="#5b21b6">F</text>
-                            <circle cx="400" cy="260" r="5" fill="#2563eb"/>
+                        <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="700" height="460" fill="#fff"/>
+                            <polygon points="50,60 288,220 50,220" fill="#86efac" fill-opacity="0.7"/>
+                            <rect x="50" y="220" width="238" height="140" fill="#93c5fd" fill-opacity="0.7"/>
+                            <line x1="50" y1="410" x2="638" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="50" y1="410" x2="50" y2="32" stroke="#111827" stroke-width="2"/>
+                            <polygon points="635,405 644,410 635,415" fill="#111827"/>
+                            <polygon points="45,32 50,23 55,32" fill="#111827"/>
+                            <text x="648" y="415" font-size="15" fill="#111827">Q</text>
+                            <text x="34" y="26" font-size="15" fill="#111827">P</text>
+                            <line x1="50" y1="60" x2="570" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <text x="556" y="406" font-size="14" fill="#111827">D</text>
+                            <line x1="50" y1="360" x2="638" y2="360" stroke="#dc2626" stroke-width="2.5"/>
+                            <text x="608" y="353" font-size="14" fill="#dc2626">MC</text>
+                            <line x1="50" y1="220" x2="638" y2="220" stroke="#2563eb" stroke-width="2"/>
+                            <text x="608" y="213" font-size="14" fill="#2563eb">p</text>
+                            <line x1="288" y1="220" x2="288" y2="410" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 4"/>
+                            <circle cx="288" cy="220" r="4" fill="#2563eb"/>
+                            <text x="280" y="428" font-size="14" fill="#2563eb">q*</text>
+                            <text x="90" y="160" font-size="14" font-weight="700" fill="#166534">CS</text>
+                            <text x="75" y="176" font-size="12" fill="#166534">(F ≤ CS)</text>
+                            <text x="100" y="302" font-size="14" font-weight="700" fill="#1d4ed8">Markup Profit</text>
+                            <text x="100" y="320" font-size="12" fill="#1d4ed8">(p − MC) × q*</text>
+                            <text x="18" y="224" font-size="13" fill="#2563eb">p</text>
+                            <text x="12" y="364" font-size="13" fill="#dc2626">MC</text>
+                            <rect x="440" y="38" width="210" height="76" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect x="454" y="52" width="14" height="14" fill="#86efac"/>
+                            <text x="474" y="63" font-size="13" fill="#374151">CS (часть идёт в F)</text>
+                            <rect x="454" y="72" width="14" height="14" fill="#93c5fd"/>
+                            <text x="474" y="83" font-size="13" fill="#374151">Markup Profit (p−MC)·q</text>
                         </svg>
                     </div>
                 </section>
 
                 <section id="pd3" class="theory-section">
                     <h2>4.3. Ценовая дискриминация третьей степени</h2>
-                    <p>Фирма делит покупателей на наблюдаемые группы и назначает каждой группе свою цену.</p>
+                    <p>Фирма делит покупателей на наблюдаемые сегменты и назначает каждому сегменту свою цену.</p>
                     <p class="formula">T(q) = p[segment] · q</p>
+                    <p>Сегмент с менее эластичным спросом получает более высокую цену. В модели — сегменты A, B, C.</p>
                     <div class="graph-block">
-                        <h3>График PD3</h3>
-                        <svg class="theory-graph" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0" y="0" width="760" height="540" fill="#ffffff"/>
-                            <line x1="70" y1="460" x2="230" y2="460" stroke="#111827" stroke-width="2"/>
-                            <line x1="70" y1="460" x2="70" y2="80" stroke="#111827" stroke-width="2"/>
-                            <line x1="300" y1="460" x2="460" y2="460" stroke="#111827" stroke-width="2"/>
-                            <line x1="300" y1="460" x2="300" y2="80" stroke="#111827" stroke-width="2"/>
-                            <line x1="530" y1="460" x2="690" y2="460" stroke="#111827" stroke-width="2"/>
-                            <line x1="530" y1="460" x2="530" y2="80" stroke="#111827" stroke-width="2"/>
-                            <text x="145" y="490" font-size="20" fill="#111827">A</text>
-                            <text x="375" y="490" font-size="20" fill="#111827">B</text>
-                            <text x="605" y="490" font-size="20" fill="#111827">C</text>
-                            <line x1="95" y1="130" x2="210" y2="360" stroke="#1f2937" stroke-width="3"/>
-                            <line x1="325" y1="160" x2="440" y2="350" stroke="#1f2937" stroke-width="3"/>
-                            <line x1="555" y1="120" x2="670" y2="395" stroke="#1f2937" stroke-width="3"/>
-                            <line x1="70" y1="220" x2="230" y2="220" stroke="#2563eb" stroke-width="3"/>
-                            <line x1="300" y1="255" x2="460" y2="255" stroke="#10b981" stroke-width="3"/>
-                            <line x1="530" y1="305" x2="690" y2="305" stroke="#f59e0b" stroke-width="3"/>
-                            <text x="82" y="212" font-size="18" fill="#2563eb">pA</text>
-                            <text x="312" y="247" font-size="18" fill="#10b981">pB</text>
-                            <text x="542" y="297" font-size="18" fill="#f59e0b">pC</text>
-                            <polygon points="95,130 150,220 150,460 70,460 70,220" fill="#bfdbfe" fill-opacity="0.75"/>
-                            <polygon points="325,160 390,255 390,460 300,460 300,255" fill="#bbf7d0" fill-opacity="0.75"/>
-                            <polygon points="555,120 633,305 633,460 530,460 530,305" fill="#fde68a" fill-opacity="0.75"/>
+                        <h3>График PD3 — три сегмента</h3>
+                        <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="700" height="460" fill="#fff"/>
+                            <polygon points="30,80 84,185 30,185" fill="#86efac" fill-opacity="0.7"/>
+                            <rect x="30" y="185" width="54" height="225" fill="#bfdbfe" fill-opacity="0.85"/>
+                            <polygon points="258,90 348,260 258,260" fill="#86efac" fill-opacity="0.7"/>
+                            <rect x="258" y="260" width="90" height="150" fill="#bbf7d0" fill-opacity="0.85"/>
+                            <polygon points="486,60 617,330 486,330" fill="#86efac" fill-opacity="0.7"/>
+                            <rect x="486" y="330" width="131" height="80" fill="#fde68a" fill-opacity="0.85"/>
+                            <line x1="30" y1="410" x2="215" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="30" y1="410" x2="30" y2="35" stroke="#111827" stroke-width="2"/>
+                            <polygon points="211,405 220,410 211,415" fill="#111827"/>
+                            <polygon points="25,35 30,26 35,35" fill="#111827"/>
+                            <line x1="258" y1="410" x2="443" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="258" y1="410" x2="258" y2="35" stroke="#111827" stroke-width="2"/>
+                            <polygon points="439,405 448,410 439,415" fill="#111827"/>
+                            <polygon points="253,35 258,26 263,35" fill="#111827"/>
+                            <line x1="486" y1="410" x2="671" y2="410" stroke="#111827" stroke-width="2"/>
+                            <line x1="486" y1="410" x2="486" y2="35" stroke="#111827" stroke-width="2"/>
+                            <polygon points="667,405 676,410 667,415" fill="#111827"/>
+                            <polygon points="481,35 486,26 491,35" fill="#111827"/>
+                            <line x1="30" y1="80" x2="200" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <line x1="258" y1="90" x2="428" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <line x1="486" y1="60" x2="656" y2="410" stroke="#111827" stroke-width="2.5"/>
+                            <line x1="30" y1="185" x2="215" y2="185" stroke="#2563eb" stroke-width="2"/>
+                            <line x1="258" y1="260" x2="443" y2="260" stroke="#10b981" stroke-width="2"/>
+                            <line x1="486" y1="330" x2="671" y2="330" stroke="#f59e0b" stroke-width="2"/>
+                            <line x1="84" y1="185" x2="84" y2="410" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 4"/>
+                            <line x1="348" y1="260" x2="348" y2="410" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5 4"/>
+                            <line x1="617" y1="330" x2="617" y2="410" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4"/>
+                            <circle cx="84" cy="185" r="3.5" fill="#2563eb"/>
+                            <circle cx="348" cy="260" r="3.5" fill="#10b981"/>
+                            <circle cx="617" cy="330" r="3.5" fill="#f59e0b"/>
+                            <text x="34" y="180" font-size="13" font-weight="700" fill="#2563eb">pA</text>
+                            <text x="262" y="255" font-size="13" font-weight="700" fill="#10b981">pB</text>
+                            <text x="490" y="325" font-size="13" font-weight="700" fill="#f59e0b">pC</text>
+                            <text x="38" y="320" font-size="12" font-weight="700" fill="#1d4ed8">Rev A</text>
+                            <text x="276" y="348" font-size="12" font-weight="700" fill="#047857">Rev B</text>
+                            <text x="524" y="378" font-size="12" font-weight="700" fill="#b45309">Rev C</text>
+                            <text x="90" y="435" font-size="14" font-weight="700" fill="#374151">A</text>
+                            <text x="320" y="435" font-size="14" font-weight="700" fill="#374151">B</text>
+                            <text x="545" y="435" font-size="14" font-weight="700" fill="#374151">C</text>
+                            <text x="48" y="450" font-size="11" fill="#6b7280">высокая цена</text>
+                            <text x="272" y="450" font-size="11" fill="#6b7280">средняя цена</text>
+                            <text x="500" y="450" font-size="11" fill="#6b7280">низкая цена</text>
+                            <rect x="400" y="38" width="258" height="56" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+                            <rect x="414" y="52" width="14" height="14" fill="#86efac"/>
+                            <text x="434" y="63" font-size="13" fill="#374151">CS (остаток у покупателей)</text>
+                            <rect x="414" y="72" width="14" height="14" fill="#bfdbfe"/>
+                            <text x="434" y="83" font-size="13" fill="#374151">Revenue = p × q (фирма)</text>
                         </svg>
                     </div>
                 </section>
 
                 <section id="metrics" class="theory-section">
                     <h2>5. Экономические показатели</h2>
-                    <p><strong>Revenue</strong> — выручка фирмы.</p>
-                    <p><strong>VarCost</strong> — переменные издержки: <strong>mc · Q</strong>.</p>
+                    <p><strong>Revenue</strong> — выручка фирмы: сумма всех платежей.</p>
+                    <p><strong>VarCost</strong> — переменные издержки: mc · Q.</p>
                     <p><strong>Profit</strong> — прибыль:</p>
-                    <p class="formula">Profit = Revenue - VarCost</p>
-                    <p><strong>CS</strong> — consumer surplus.</p>
-                    <p><strong>PS</strong> — producer surplus.</p>
+                    <p class="formula">Profit = Revenue − VarCost</p>
+                    <p><strong>CS</strong> — consumer surplus, потребительский излишек.</p>
+                    <p><strong>PS</strong> — producer surplus, производительный излишек (= Profit в этой модели).</p>
                     <p><strong>W</strong> — общественное благосостояние:</p>
                     <p class="formula">W = CS + PS</p>
                 </section>
 
                 <section id="connection" class="theory-section">
                     <h2>6. Связь теории с симулятором</h2>
-                    <p>Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя задаётся функция спроса, затем строится функция платежа <strong>T(q)</strong>, после чего покупатель выбирает объём, который максимизирует его полезность.</p>
+                    <p>Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя задаётся функция спроса, строится функция платежа <strong>T(q)</strong>, покупатель выбирает объём, максимизируя полезность.</p>
                     <p>Индивидуальные решения агрегируются в показатели фирмы и рынка: Q, Revenue, Profit, CS, PS, W.</p>
                 </section>
+
             </main>
         </div>
     </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
