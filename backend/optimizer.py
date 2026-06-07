@@ -2,6 +2,7 @@ from demand import total_value
 
 
 def find_best_q(buyer, gap, pricing_func, pricing_params):
+    # Перебирает все допустимые объёмы и выбирает q*, максимизирующий U = V(q) - T(q)
     money = buyer["money"]
 
     best_result = {
@@ -16,15 +17,16 @@ def find_best_q(buyer, gap, pricing_func, pricing_params):
         value = total_value(buyer, q)
         payment = pricing_func(q, pricing_params, buyer)
 
+        # Покупатель не может заплатить больше чем у него есть денег
         if payment > money:
             continue
 
         utility = value - payment
         consumer_surplus = utility
 
+        # Выбираем q с максимальной полезностью, при равенстве - больший объём
         if (utility > best_result["utility"]
-                or (utility == best_result["utility"] and q > best_result[
-                    "q"])):
+                or (utility == best_result["utility"] and q > best_result["q"])):
             best_result = {
                 "q": q,
                 "value": value,

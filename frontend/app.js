@@ -1,5 +1,6 @@
 const BACKEND_BASE_URL = ""
 
+// Предустановленные сценарии для быстрой загрузки примеров
 const SCENARIOS = {
     textbook: {
         name: "Учебник: монополия",
@@ -47,6 +48,7 @@ const SCENARIOS = {
     }
 };
 
+// Полные названия режимов для отображения в интерфейсе
 const MODE_NAMES = {
     uniform: "Uniform",
     pd1:     "PD1 — первая степень",
@@ -54,6 +56,7 @@ const MODE_NAMES = {
     pd3:     "PD3 — третья степень"
 };
 
+// Короткие метки для снапшотов и компактных блоков
 const MODE_SHORT = {
     uniform: "Uniform",
     pd1:     "PD1",
@@ -61,8 +64,9 @@ const MODE_SHORT = {
     pd3:     "PD3"
 };
 
+// Тексты подсказок при наведении на метрики в блоке итогов
 const METRIC_TOOLTIPS = {
-    Q:       "Q — суммарный объём покупок всех покупателей у этой фирмы",
+    Q:       "Q — суммарный объем покупок всех покупателей у этой фирмы",
     Revenue: "Revenue = Σ T(q) — суммарная выручка фирмы (все платежи покупателей)",
     Profit:  "Profit = Revenue − MC·Q — прибыль фирмы после переменных издержек",
     CS:      "CS = Σ [V(q) − T(q)] — потребительский излишек: что покупатели получили сверх уплаченного",
@@ -73,6 +77,7 @@ const METRIC_TOOLTIPS = {
 };
 
 
+// DOM-ссылки на основные элементы интерфейса
 const runBtn               = document.getElementById("run-btn");
 const downloadBtn          = document.getElementById("download-btn");
 const resultBox            = document.getElementById("result-box");
@@ -90,6 +95,7 @@ const snapClearBtn         = document.getElementById("snap-clear-btn");
 const snapshotsContainer   = document.getElementById("snapshots-container");
 
 
+// Глобальное состояние приложения
 let lastReportText  = "";
 let buyerCounter    = 1;
 let buyers          = [];
@@ -100,7 +106,7 @@ let snapChart       = null;
 let hasRunOnce      = false;
 const buyerPositions = {};
 
-// Snapshot state
+// Состояние снапшотов - хранит до 5 результатов для сравнения
 let snapshots       = [];
 let snapshotCounter = 0;
 let lastDataA       = null;
@@ -109,12 +115,14 @@ let lastModeA       = "uniform";
 let lastModeB       = "uniform";
 
 
+// Помечает кнопку запуска как "требует перезапуска" после изменения параметров
 function setDirty() {
     if (!hasRunOnce) return;
     runBtn.classList.add("run-btn--dirty");
     runBtn.textContent = "↺ Параметры изменились — перезапусти";
 }
 
+// Сбрасывает метку dirty после успешного запуска симуляции
 function setClean() {
     hasRunOnce = true;
     runBtn.classList.remove("run-btn--dirty");
@@ -122,6 +130,7 @@ function setClean() {
 }
 
 
+// Считывает текущее состояние формы фирмы (режим, MC, мощность, параметры цен)
 function captureFirmState(suffix) {
     const mode     = document.getElementById(`pricing-mode-${suffix}`).value;
     const mc       = parseFloat(document.getElementById(`mc-${suffix}`).value);
@@ -142,6 +151,7 @@ function captureFirmState(suffix) {
     return { mode, mc, capacity, params };
 }
 
+// Считывает все данные одного покупателя из его формы по ID
 function collectOneBuyerData(id) {
     const demandType = document.getElementById(`b${id}-demand_type`)?.value || "linear";
     const data = {
@@ -163,6 +173,7 @@ function collectOneBuyerData(id) {
     return data;
 }
 
+// Сохраняет текущее состояние формы в localStorage для восстановления при перезагрузке
 function saveState() {
     try {
         const state = {
@@ -174,6 +185,7 @@ function saveState() {
     } catch (e) {}
 }
 
+// Заполняет форму фирмы из сохраненного объекта состояния
 function restoreFirmState(firmState, suffix) {
     document.getElementById(`pricing-mode-${suffix}`).value = firmState.mode || "uniform";
     document.getElementById(`mc-${suffix}`).value            = firmState.mc   || 2;
@@ -182,6 +194,7 @@ function restoreFirmState(firmState, suffix) {
     setFirmParams(firmState, suffix);
 }
 
+// Восстанавливает состояние из localStorage; возвращает false если сохранения нет
 function loadSavedState() {
     try {
         const raw = localStorage.getItem("mss_state");
@@ -198,6 +211,7 @@ function loadSavedState() {
 }
 
 
+// Клиентский аналог demand.py: MB(k) для мини-графика без запроса к серверу
 function mbJS(demandType, params, k) {
     if (k <= 0) return 0;
     if (demandType === "linear")
@@ -211,6 +225,7 @@ function mbJS(demandType, params, k) {
     return 0;
 }
 
+// Показывает/скрывает дополнительные поля в зависимости от типа спроса
 function renderDemandParams(buyerId, demandType) {
     const container = document.getElementById(`demand-params-${buyerId}`);
     if (!container) return;
@@ -225,6 +240,7 @@ function renderDemandParams(buyerId, demandType) {
         .forEach(el => el.addEventListener("input", () => renderMiniCurve(buyerId)));
 }
 
+// Читает параметры спроса из формы покупателя для передачи в mbJS
 function getDemandParams(buyerId, demandType) {
     if (demandType === "linear") return {
         a: parseFloat(document.getElementById(`b${buyerId}-a`)?.value || 10),
@@ -240,6 +256,7 @@ function getDemandParams(buyerId, demandType) {
     return {};
 }
 
+// Перерисовывает SVG-гистограмму MB(k) на карточке покупателя
 function renderMiniCurve(buyerId) {
     const el = document.getElementById(`mini-curve-${buyerId}`);
     if (!el) return;
@@ -266,6 +283,7 @@ function renderMiniCurve(buyerId) {
 }
 
 
+// Генерирует HTML-поля параметров для выбранного режима ценообразования
 function renderPricingParams(mode, suffix) {
     const block = document.getElementById(`pricing-params-block-${suffix}`);
     if (!block) return;
@@ -285,6 +303,7 @@ function renderPricingParams(mode, suffix) {
     block.innerHTML = html;
 }
 
+// Читает параметры цен из формы и формирует объект для отправки на сервер
 function getPricingParams(mode, suffix) {
     if (mode === "uniform") return { p: parseFloat(document.getElementById(`param-p-${suffix}`).value) };
     if (mode === "pd1")     return {};
@@ -302,6 +321,7 @@ function getPricingParams(mode, suffix) {
     return {};
 }
 
+// Заполняет поля параметров из объекта конфигурации фирмы (используется при загрузке сценария)
 function setFirmParams(firmConfig, suffix) {
     const p = firmConfig.params || {};
     if (firmConfig.mode === "uniform") {
@@ -324,6 +344,7 @@ function setFirmParams(firmConfig, suffix) {
 }
 
 
+// Возвращает внутренности карточек покупателя
 function createBuyerFormHTML(id) {
     return `
         <div class="buyer-form-header">
@@ -387,6 +408,7 @@ function createBuyerFormHTML(id) {
         </div>`;
 }
 
+// вешает обработчики на кнопки удаления, дублирования и поля ввода карточки покупателя
 function attachBuyerListeners(id) {
     const div = document.getElementById(`buyer-form-${id}`);
 
@@ -419,6 +441,7 @@ function attachBuyerListeners(id) {
     });
 }
 
+// Создает карточку покупателя, добавляет в список и заполняет данными если переданы
 function addBuyer(data) {
     const buyer = { id: buyerCounter++ };
     buyers.push(buyer);
@@ -441,6 +464,7 @@ function addBuyer(data) {
         document.getElementById(`b${buyer.id}-demand_type`).value = dt;
         if (dt !== "linear") document.getElementById(`demand-simple-${buyer.id}`)?.classList.add("hidden");
         renderDemandParams(buyer.id, dt);
+        // setTimeout нужен чтобы поля успели отрисоваться перед заполнением
         if (dt === "inverse_square" && data.A !== undefined) {
             setTimeout(() => { const el = document.getElementById(`b${buyer.id}-A`); if (el) el.value = data.A; }, 0);
         } else if (dt === "step" && data.values) {
@@ -457,6 +481,7 @@ function getBuyerFactory(id) {
     return document.getElementById(`b${id}-factory`)?.value || "A";
 }
 
+// Возвращает отображаемые данные покупателя для игрового поля
 function getBuyerDisplayData(id) {
     return {
         segment:    document.getElementById(`b${id}-segment`)?.value     || "A",
@@ -465,6 +490,7 @@ function getBuyerDisplayData(id) {
     };
 }
 
+// Собирает данные всех покупателей для отправки на сервер
 function collectBuyersData() {
     return buyers.map(buyer => {
         const id         = buyer.id;
@@ -482,6 +508,7 @@ function collectBuyersData() {
 }
 
 
+// Показывает модальное окно подтверждения перед заменой покупателей на сценарий
 function showScenarioConfirmModal(key) {
     const existing = document.getElementById("scenario-confirm-modal");
     if (existing) existing.remove();
@@ -515,6 +542,7 @@ function showScenarioConfirmModal(key) {
     modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
 }
 
+// Решает показывать подтверждение или грузить сценарий сразу
 function loadScenario(key) {
     const skipConfirm = localStorage.getItem("mss_skip_scenario_confirm") === "true";
     if (!skipConfirm && buyers.length > 0) {
@@ -524,6 +552,7 @@ function loadScenario(key) {
     doLoadScenario(key);
 }
 
+// Сбрасывает состояние и загружает выбранный сценарий
 function doLoadScenario(key) {
     const s = SCENARIOS[key];
     if (!s) return;
@@ -550,7 +579,7 @@ function doLoadScenario(key) {
     document.getElementById("totals-content").innerHTML = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть итоги.</div>`;
     chartsContainer.innerHTML      = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть графики.</div>`;
     buyersTableContainer.innerHTML = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть таблицу.</div>`;
-    resultBox.textContent = "Отчёт появится после запуска симуляции.";
+    resultBox.textContent = "Отчет появится после запуска симуляции.";
     downloadBtn.disabled  = true;
     lastReportText        = "";
     hasRunOnce            = false;
@@ -567,6 +596,7 @@ function doLoadScenario(key) {
 }
 
 
+// Показывает/скрывает дополнительные поля у всех покупателей; при скрытии сбрасывает тип спроса к linear
 function toggleAdvancedMode(show) {
     buyersList.classList.toggle("show-advanced", show);
     if (!show) {
@@ -583,15 +613,18 @@ function toggleAdvancedMode(show) {
 }
 
 
+// Генерирует случайную позицию фигурки на мини-карте (в процентах от размера контейнера)
 function getRandomMapPos() {
     return { x: 18 + Math.random() * 64, y: 8 + Math.random() * 52 };
 }
 
+// Обеспечивает наличие позиции для каждого покупателя и удаляет позиции удаленных
 function ensureBuyerPositions() {
     buyers.forEach(b => { if (!buyerPositions[b.id]) buyerPositions[b.id] = getRandomMapPos(); });
     Object.keys(buyerPositions).forEach(id => { if (!buyers.find(b => b.id === parseInt(id))) delete buyerPositions[id]; });
 }
 
+// Рисует мини-карту с фигурками покупателей в состоянии ожидания
 function renderMiniMapWaiting() {
     const mapEl = document.getElementById("mini-map");
     if (!mapEl) return;
@@ -607,6 +640,7 @@ function renderMiniMapWaiting() {
         ${figures}`;
 }
 
+// Анимирует движение фигурок к заводам после завершения симуляции
 function animateMiniMap(allResults) {
     allResults.forEach((b, i) => {
         const fig = document.getElementById(`map-fig-${b.id}`);
@@ -624,6 +658,7 @@ function animateMiniMap(allResults) {
 }
 
 
+// строит карточки фирмы с кратким итогом или заглушкой если покупателей нет
 function makeFirmCard(label, mode, totals, colorClass) {
     const stats = totals
         ? `<div class="firm-stats">
@@ -639,6 +674,7 @@ function makeFirmCard(label, mode, totals, colorClass) {
     </div>`;
 }
 
+// Отрисовывает игровое поле до запуска: карточки покупателей в состоянии ожидания
 function renderBattlefieldWaiting() {
     const battlefield = document.getElementById("battlefield");
     if (!battlefield) return;
@@ -666,6 +702,7 @@ function renderBattlefieldWaiting() {
     renderMiniMapWaiting();
 }
 
+// Отрисовывает игровое поле после симуляции с результатами по каждому покупателю
 function renderBattlefieldResult(dataA, dataB, modeA, modeB) {
     const battlefield = document.getElementById("battlefield");
     if (!battlefield) return;
@@ -702,6 +739,7 @@ function renderBattlefieldResult(dataA, dataB, modeA, modeB) {
 }
 
 
+// Суммирует итоги двух фирм в один объект; заменяет null нулями
 function combineTotals(tA, tB) {
     const a = tA || { Q:0, Revenue:0, VarCost:0, Profit:0, CS:0, PS:0, W:0, W_eff:0, DWL:0 };
     const b = tB || { Q:0, Revenue:0, VarCost:0, Profit:0, CS:0, PS:0, W:0, W_eff:0, DWL:0 };
@@ -712,6 +750,7 @@ function combineTotals(tA, tB) {
     };
 }
 
+// Строит HTML-сетку метрик с подсказками и выделением потерь красным
 function makeTotalsGridHTML(totals) {
     if (!totals) return `<div class="placeholder-text">Нет покупателей.</div>`;
     const fields = [
@@ -731,6 +770,7 @@ function makeTotalsGridHTML(totals) {
         </div>`).join("");
 }
 
+// Рендерит блок итогов: отдельно по каждой фирме и суммарно
 function renderTotals(totalsA, totalsB) {
     const combined = combineTotals(totalsA, totalsB);
     document.getElementById("totals-content").innerHTML = `
@@ -751,6 +791,7 @@ function renderTotals(totalsA, totalsB) {
 }
 
 
+// Сохраняет текущий результат симуляции как снапшот
 function saveSnapshot() {
     if (!lastDataA && !lastDataB) return;
     if (snapshots.length >= 5) snapshots.shift();
@@ -780,6 +821,7 @@ function clearSnapshots() {
     renderSnapshots();
 }
 
+// Перерисовывает список снапшотов с подсветкой лучших значений и дельтами к предыдущему
 function renderSnapshots() {
     const badge   = document.getElementById("snap-count-badge");
     const clearBtn = snapClearBtn;
@@ -795,7 +837,7 @@ function renderSnapshots() {
     badge.textContent = snapshots.length;
     clearBtn.style.display = "";
 
-    // Find best values across all snapshots
+    // Лучшие значения по всем снапшотам для подсветки
     const bestProfit = Math.max(...snapshots.map(s => s.combined?.Profit ?? -Infinity));
     const bestCS     = Math.max(...snapshots.map(s => s.combined?.CS     ?? -Infinity));
     const bestW      = Math.max(...snapshots.map(s => s.combined?.W      ?? -Infinity));
@@ -805,6 +847,7 @@ function renderSnapshots() {
         const prev = i > 0 ? snapshots[i - 1].combined : null;
         const c    = snap.combined;
 
+        // Стрелка изменения относительно предыдущего снапшота
         function deltaHTML(key, lowerIsBetter = false) {
             if (!prev || prev[key] == null || c[key] == null) return "";
             const diff = c[key] - prev[key];
@@ -815,6 +858,7 @@ function renderSnapshots() {
             return `<span class="snap-delta ${cls}">${sign}${formatNumber(diff)}</span>`;
         }
 
+        // CSS-класс для ячейки с лучшим значением
         function cellClass(key, lowerIsBetter = false) {
             if (c == null) return "";
             if (lowerIsBetter) return Math.abs(c[key] - bestDWL) < 0.001 ? " snap-cell--best-loss" : "";
@@ -876,6 +920,7 @@ function renderSnapshots() {
     }
 }
 
+// Строит сгруппированную выборку с Profit/CS/W/DWL по всем снапшотам
 function renderSnapshotChart() {
     const canvas = document.getElementById("snap-chart-canvas");
     if (!canvas) return;
@@ -902,6 +947,7 @@ function renderSnapshotChart() {
 }
 
 
+// Строит два графика: сравнение фирм по CS/PS/W/DWL и результаты по каждому покупателю
 function renderCharts(dataA, dataB) {
     chartsContainer.innerHTML = `
         <div class="chart-wrap"><div class="chart-title">Благосостояние: Фирма A vs Фирма B</div><canvas id="welfare-canvas"></canvas></div>
@@ -941,6 +987,7 @@ function renderCharts(dataA, dataB) {
 }
 
 
+// Строит таблицу с детальными результатами по каждому покупателю после симуляции
 function renderBuyersTable(resultsA, resultsB) {
     const all = [...resultsA.map(b => ({...b, factory:"A"})), ...resultsB.map(b => ({...b, factory:"B"}))];
     if (!all.length) { buyersTableContainer.innerHTML = `<div class="placeholder-text">Нет данных.</div>`; return; }
@@ -962,9 +1009,10 @@ function renderBuyersTable(resultsA, resultsB) {
 function showError(msg) {
     resultBox.classList.remove("hidden");
     resultBox.textContent = msg;
-    toggleReportBtn.textContent = "▼ Скрыть текстовый отчёт";
+    toggleReportBtn.textContent = "▼ Скрыть текстовый отчет";
 }
 
+// отправляет POST simulate и возвращает JSON и бросает ошибку с деталями если статус не 2xx
 async function postSimulate(payload) {
     const response = await fetch(`${BACKEND_BASE_URL}/simulate`, {
         method: "POST",
@@ -978,6 +1026,7 @@ async function postSimulate(payload) {
     return response.json();
 }
 
+// Главная функция запуска: параллельно вызывает /simulate для фирм A и B, затем рендерит все блоки
 async function runSimulation() {
     if (buyers.length === 0) { showError("Добавь хотя бы одного покупателя."); return; }
 
@@ -1012,6 +1061,7 @@ async function runSimulation() {
         downloadBtn.disabled = false;
         setClean();
 
+        // Сохраняем последние данные для снапшота
         lastDataA = dataA;
         lastDataB = dataB;
         lastModeA = modeA;
@@ -1033,6 +1083,7 @@ async function runSimulation() {
 }
 
 
+// Формирует текстовый отчет для скачивания
 function buildReport(dataA, dataB, modeA, modeB) {
     const totalsStr = t => !t ? "" :
         `Q: ${formatNumber(t.Q)} | Revenue: ${formatNumber(t.Revenue)} | Profit: ${formatNumber(t.Profit)}\n` +
@@ -1040,13 +1091,14 @@ function buildReport(dataA, dataB, modeA, modeB) {
     const buyersStr = results => (results || []).map((b, i) =>
         `  #${i+1} (ID ${b.id}) | ${b.segment} | ${b.demand_type} | Gap=${formatNumber(b.gap)} q*=${formatNumber(b.q)} T=${formatNumber(b.payment)} CS=${formatNumber(b.consumer_surplus)}\n`
     ).join("");
-    let text = "ОТЧЁТ ПО СИМУЛЯЦИИ\n==================\n\n";
+    let text = "ОТЧЕТ ПО СИМУЛЯЦИИ\n==================\n\n";
     if (dataA) text += `ФИРМА A — ${MODE_NAMES[modeA]}\n${"─".repeat(36)}\n${buyersStr(dataA.buyers_results)}\n${totalsStr(dataA.totals)}\n`;
     if (dataB) text += `ФИРМА B — ${MODE_NAMES[modeB]}\n${"─".repeat(36)}\n${buyersStr(dataB.buyers_results)}\n${totalsStr(dataB.totals)}\n`;
     if (dataA && dataB) text += `СУММАРНО\n${"─".repeat(36)}\n${totalsStr(combineTotals(dataA.totals, dataB.totals))}`;
     return text;
 }
 
+// Создает Blob из текста отчета и инициирует скачивание файла
 function downloadReport() {
     if (!lastReportText) return;
     const blob = new Blob([lastReportText], { type: "text/plain;charset=utf-8" });
@@ -1058,6 +1110,7 @@ function downloadReport() {
 }
 
 
+// Читает параметры из формы сравнения режимов
 function getCompareParams() {
     return {
         uniform_params: { p: parseFloat(document.getElementById("cmp-uniform-p").value) },
@@ -1066,6 +1119,7 @@ function getCompareParams() {
     };
 }
 
+// Отправляет POST /compare с параметрами всех 4 режимов и рендерит таблицу сравнения
 async function runComparison() {
     if (buyers.length === 0) { document.getElementById("compare-results").innerHTML = `<div class="placeholder-text">Сначала добавь покупателей.</div>`; return; }
     compareBtn.disabled = true; compareBtn.textContent = "Считаю...";
@@ -1083,6 +1137,7 @@ async function runComparison() {
     }
 }
 
+// рендерит таблицу и график сравнения всех четырех режимов с подсветкой лучших значений
 function renderCompareResults(results) {
     const modes   = ["uniform", "pd1", "pd2", "pd3"];
     const labels  = { uniform: "Uniform", pd1: "PD1", pd2: "PD2", pd3: "PD3" };
@@ -1131,8 +1186,9 @@ function renderCompareResults(results) {
 }
 
 
+// Форматирует число: целые без дробей, остальные с 2 знаками после запятой
 function formatNumber(value) {
-    if (typeof value !== "number") return value ?? "—";
+    if (typeof value !== "number") return value ?? "-";
     if (Number.isInteger(value)) return value.toString();
     return value.toFixed(2);
 }
@@ -1143,6 +1199,7 @@ function switchTab(tabId) {
 }
 
 
+// Обработчики событий
 document.getElementById("pricing-mode-a").addEventListener("change", (e) => { renderPricingParams(e.target.value, "a"); renderBattlefieldWaiting(); });
 document.getElementById("pricing-mode-b").addEventListener("change", (e) => { renderPricingParams(e.target.value, "b"); renderBattlefieldWaiting(); });
 
@@ -1157,19 +1214,20 @@ advancedToggle.addEventListener("change",  e => toggleAdvancedMode(e.target.chec
 
 toggleReportBtn.addEventListener("click", () => {
     const hidden = resultBox.classList.toggle("hidden");
-    toggleReportBtn.textContent = hidden ? "▶ Показать текстовый отчёт" : "▼ Скрыть текстовый отчёт";
+    toggleReportBtn.textContent = hidden ? "▶ Показать текстовый отчет" : "▼ Скрыть текстовый отчет";
 });
 
 document.querySelectorAll(".scenario-btn").forEach(btn => {
     btn.addEventListener("click", () => loadScenario(btn.dataset.scenario));
 });
 
+// Делегированный обработчик: любое изменение в панели управления сохраняет состояние и помечает как dirty
 const controlsPanel = document.querySelector(".controls");
 controlsPanel.addEventListener("input",  () => { saveState(); setDirty(); });
 controlsPanel.addEventListener("change", () => { saveState(); setDirty(); });
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
 
+// инициализация: рендерим параметры режимов и восстанавливаем состояние из localStorage
 renderPricingParams("uniform", "a");
 renderPricingParams("uniform", "b");
 
