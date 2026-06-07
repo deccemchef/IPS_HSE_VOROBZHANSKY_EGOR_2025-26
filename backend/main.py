@@ -19,8 +19,6 @@ app.add_middleware(
 )
 
 
-# --- Pydantic models ---
-
 class BuyerModel(BaseModel):
     id: int
     money: float
@@ -110,15 +108,53 @@ class SimulateRequest(BaseModel):
         return self
 
 
+class CompareRequest(BaseModel):
+    buyers: list[BuyerModel]
+    mc: float
+    capacity_per_day: Optional[int] = None
+    uniform_params: dict
+    pd2_params: dict
+    pd3_params: dict
+
+    @field_validator("mc")
+    @classmethod
+    def mc_non_negative(cls, v):
+        if v < 0:
+            raise ValueError("mc must be >= 0")
+        return v
+
+    @field_validator("capacity_per_day")
+    @classmethod
+    def capacity_positive(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError("capacity_per_day must be > 0")
+        return v
+
+    @model_validator(mode="after")
+    def check_mode_params(self):
+        u = self.uniform_params
+        if "p" not in u or u["p"] < 0:
+            raise ValueError("uniform_params requires 'p' >= 0")
+        p2 = self.pd2_params
+        if "F" not in p2 or "p" not in p2:
+            raise ValueError("pd2_params requires 'F' and 'p'")
+        if p2["F"] < 0 or p2["p"] < 0:
+            raise ValueError("pd2_params: 'F' and 'p' must be >= 0")
+        p3 = self.pd3_params
+        if "segment_prices" not in p3:
+            raise ValueError("pd3_params requires 'segment_prices'")
+        for seg, price in p3["segment_prices"].items():
+            if price < 0:
+                raise ValueError(f"pd3: price for segment {seg} must be >= 0")
+        return self
+
+
 PRICING_FUNCS = {
     "uniform": uniform_price,
     "pd1": pd1_price,
     "pd2": pd2_price,
     "pd3": pd3_price,
 }
-
-
-# --- Endpoints ---
 
 @app.get("/")
 def root():
@@ -139,6 +175,31 @@ def simulate(request: SimulateRequest):
     )
 
     return result
+
+
+@app.post("/compare")
+def compare_modes(request: CompareRequest):
+    buyers_dicts = [b.model_dump() for b in request.buyers]
+
+    modes = {
+        "uniform": (uniform_price, request.uniform_params),
+        "pd1":     (pd1_price,     {}),
+        "pd2":     (pd2_price,     request.pd2_params),
+        "pd3":     (pd3_price,     request.pd3_params),
+    }
+
+    results = {}
+    for mode_name, (pricing_func, pricing_params) in modes.items():
+        sim = run_simulation(
+            buyers=buyers_dicts,
+            pricing_func=pricing_func,
+            pricing_params=pricing_params,
+            mc=request.mc,
+            capacity_per_day=request.capacity_per_day
+        )
+        results[mode_name] = sim["totals"]
+
+    return results
 
 
 @app.get("/test-demand")
