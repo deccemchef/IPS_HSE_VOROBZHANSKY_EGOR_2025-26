@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator, model_validator
 from typing import Literal, Optional
+import os
 from demand import marginal_benefit, total_value
 from optimizer import find_best_q
 from pricing import uniform_price, pd1_price, pd2_price, pd3_price
@@ -156,16 +158,11 @@ PRICING_FUNCS = {
     "pd3": pd3_price,
 }
 
-@app.get("/")
-def root():
-    return {"message": "Server is running"}
-
 
 @app.post("/simulate")
 def simulate(request: SimulateRequest):
     pricing_func = PRICING_FUNCS[request.pricing_mode]
     buyers_dicts = [b.model_dump() for b in request.buyers]
-
     result = run_simulation(
         buyers=buyers_dicts,
         pricing_func=pricing_func,
@@ -173,21 +170,18 @@ def simulate(request: SimulateRequest):
         mc=request.mc,
         capacity_per_day=request.capacity_per_day
     )
-
     return result
 
 
 @app.post("/compare")
 def compare_modes(request: CompareRequest):
     buyers_dicts = [b.model_dump() for b in request.buyers]
-
     modes = {
         "uniform": (uniform_price, request.uniform_params),
         "pd1":     (pd1_price,     {}),
         "pd2":     (pd2_price,     request.pd2_params),
         "pd3":     (pd3_price,     request.pd3_params),
     }
-
     results = {}
     for mode_name, (pricing_func, pricing_params) in modes.items():
         sim = run_simulation(
@@ -198,7 +192,6 @@ def compare_modes(request: CompareRequest):
             capacity_per_day=request.capacity_per_day
         )
         results[mode_name] = sim["totals"]
-
     return results
 
 
@@ -207,12 +200,10 @@ def test_demand():
     buyer_linear = {"id": 1, "demand_type": "linear", "params": {"a": 10, "b": 2}}
     buyer_inverse = {"id": 2, "demand_type": "inverse_square", "params": {"A": 20}}
     buyer_step = {"id": 3, "demand_type": "step", "params": {"values": [10, 10, 6, 6, 2]}}
-
     results = {}
     for buyer in [buyer_linear, buyer_inverse, buyer_step]:
         mb_list = [marginal_benefit(buyer, k) for k in range(1, 6)]
         results[buyer["demand_type"]] = {"MB_1_to_5": mb_list, "V_5": total_value(buyer, 5)}
-
     return results
 
 
@@ -236,3 +227,8 @@ def test_simulation():
         {"id": 3, "money": 20, "segment": "C", "target_stock": 6, "stock": 2, "demand_type": "step", "params": {"values": [10, 10, 6, 6, 2]}}
     ]
     return run_simulation(buyers=buyers, pricing_func=uniform_price, pricing_params={"p": 4}, mc=2, capacity_per_day=20)
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
