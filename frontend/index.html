@@ -14,39 +14,246 @@
     </header>
 
     <nav class="tabs">
+        <button class="tab-btn" data-tab="guide-tab">👋 Первый раз?</button>
         <button class="tab-btn active" data-tab="simulator-tab">Симулятор</button>
         <button class="tab-btn" data-tab="theory-tab">Теория</button>
     </nav>
+
+    <section id="guide-tab" class="tab-content">
+        <div class="guide-page">
+
+            <div class="guide-hero">
+                <div class="guide-hero-text">
+                    <h2>Добро пожаловать в Monopolist Strategy Studio</h2>
+                    <p>Это симулятор, который помогает понять как монополист зарабатывает деньги и почему разные стратегии ценообразования дают разные результаты для фирмы, покупателей и общества.</p>
+                    <p>Здесь ты настраиваешь покупателей, выбираешь стратегию — и смотришь что получается с прибылью, потребительским излишком и потерями благосостояния.</p>
+                </div>
+                <div class="guide-hero-icon">🏭</div>
+            </div>
+
+            <h2 class="guide-section-title">Быстрый старт — 3 шага</h2>
+            <div class="guide-steps">
+                <div class="guide-step-card">
+                    <div class="guide-step-num">1</div>
+                    <div class="guide-step-body">
+                        <div class="guide-step-title">Настрой покупателей</div>
+                        <p>В левой панели добавь покупателей. Каждый покупатель описывается кривой спроса — насколько он ценит первую единицу товара и как быстро его интерес падает.</p>
+                        <p>Покупатель принадлежит одному из заводов (A или B) и одному из сегментов (A, B, C). Сегмент важен для режима PD3.</p>
+                        <div class="guide-tip-inline">Начни с готового сценария — кнопки вверху левой панели загружают уже настроенные примеры.</div>
+                    </div>
+                </div>
+                <div class="guide-step-card">
+                    <div class="guide-step-num">2</div>
+                    <div class="guide-step-body">
+                        <div class="guide-step-title">Выбери режим ценообразования</div>
+                        <p>Для каждого завода выбери одну из 4 стратегий и настрой параметры. Подробнее — в разделе ниже.</p>
+                        <p>Можно поставить разные режимы на заводы A и B, чтобы сравнить их результаты в одном запуске.</p>
+                    </div>
+                </div>
+                <div class="guide-step-card">
+                    <div class="guide-step-num">3</div>
+                    <div class="guide-step-body">
+                        <div class="guide-step-title">Запусти симуляцию</div>
+                        <p>Нажми <strong>«Запустить симуляцию»</strong> внизу левой панели. Покупатели выберут оптимальный объём покупки, ты увидишь итоговые метрики, графики и подробную таблицу.</p>
+                        <p>Сохрани результат кнопкой <strong>📷 Снапшот</strong> — и меняй параметры, чтобы сравнивать стратегии.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="guide-section-title">Режимы ценообразования</h2>
+            <div class="guide-modes-grid">
+                <div class="guide-mode-card guide-mode-uniform">
+                    <div class="guide-mode-header">
+                        <span class="guide-mode-badge">Uniform</span>
+                        <span class="guide-mode-aka">Единая цена</span>
+                    </div>
+                    <p>Фирма устанавливает одну цену <strong>p</strong> для всех. Покупатель купит столько единиц, сколько ему выгодно при этой цене.</p>
+                    <div class="guide-mode-param"><strong>Параметр:</strong> p — цена за единицу</div>
+                    <div class="guide-mode-formula">T(q) = p · q</div>
+                    <div class="guide-mode-insight">Простейший режим. Часть покупателей, чья ценность ниже p, не купят ничего → возникает DWL.</div>
+                </div>
+
+                <div class="guide-mode-card guide-mode-pd1">
+                    <div class="guide-mode-header">
+                        <span class="guide-mode-badge">PD1</span>
+                        <span class="guide-mode-aka">Первая степень</span>
+                    </div>
+                    <p>Фирма знает точную готовность платить каждого и назначает индивидуальную цену за каждую единицу. Весь потребительский излишек уходит фирме.</p>
+                    <div class="guide-mode-param"><strong>Параметры:</strong> не нужны</div>
+                    <div class="guide-mode-formula">T(q) = V(q) — вся ценность</div>
+                    <div class="guide-mode-insight">Максимальный Profit, CS = 0, DWL = 0. Теоретический предел — в реальности недостижим.</div>
+                </div>
+
+                <div class="guide-mode-card guide-mode-pd2">
+                    <div class="guide-mode-header">
+                        <span class="guide-mode-badge">PD2</span>
+                        <span class="guide-mode-aka">Двухчастный тариф</span>
+                    </div>
+                    <p>Покупатель платит фиксированный взнос <strong>F</strong> при входе, плюс цену <strong>p</strong> за каждую единицу. Если не платит F — не покупает вообще.</p>
+                    <div class="guide-mode-param"><strong>Параметры:</strong> F — взнос, p — цена за единицу</div>
+                    <div class="guide-mode-formula">T(q) = F + p · q, если q &gt; 0</div>
+                    <div class="guide-mode-insight">Через F фирма изымает часть CS. Чем меньше p — тем больше покупают, но нужен баланс с F.</div>
+                </div>
+
+                <div class="guide-mode-card guide-mode-pd3">
+                    <div class="guide-mode-header">
+                        <span class="guide-mode-badge">PD3</span>
+                        <span class="guide-mode-aka">Третья степень</span>
+                    </div>
+                    <p>Фирма делит покупателей на сегменты A, B, C и назначает каждому сегменту свою цену. Покупатели из разных сегментов платят по-разному за одно и то же.</p>
+                    <div class="guide-mode-param"><strong>Параметры:</strong> pA, pB, pC — цены по сегментам</div>
+                    <div class="guide-mode-formula">T(q) = p[сегмент] · q</div>
+                    <div class="guide-mode-insight">Сегмент с меньшей эластичностью — выше цена. Позволяет извлечь больше, чем Uniform.</div>
+                </div>
+            </div>
+
+            <h2 class="guide-section-title">Что значат метрики</h2>
+            <div class="guide-metrics-grid">
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">Q</div>
+                    <div class="guide-metric-desc">Суммарный объём покупок — сколько единиц купили все покупатели у этой фирмы.</div>
+                </div>
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">Revenue</div>
+                    <div class="guide-metric-desc">Выручка — сумма всех платежей покупателей. Revenue = Σ T(q).</div>
+                </div>
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">Profit</div>
+                    <div class="guide-metric-desc">Прибыль фирмы после вычета переменных издержек. Profit = Revenue − MC · Q.</div>
+                </div>
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">CS</div>
+                    <div class="guide-metric-desc">Consumer Surplus — потребительский излишек. То, что покупатели получили сверх уплаченного: CS = Σ [V(q) − T(q)].</div>
+                </div>
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">PS</div>
+                    <div class="guide-metric-desc">Producer Surplus — производительный излишек. В этой модели совпадает с Profit.</div>
+                </div>
+                <div class="guide-metric-card">
+                    <div class="guide-metric-name">W</div>
+                    <div class="guide-metric-desc">Welfare — общественное благосостояние. W = CS + PS. Показывает суммарную выгоду всех участников рынка.</div>
+                </div>
+                <div class="guide-metric-card guide-metric-card--ref">
+                    <div class="guide-metric-name">W_eff</div>
+                    <div class="guide-metric-desc">Эффективное благосостояние при цене P = MC (конкурентный рынок). Это теоретический максимум W — эталон для сравнения.</div>
+                </div>
+                <div class="guide-metric-card guide-metric-card--loss">
+                    <div class="guide-metric-name">DWL</div>
+                    <div class="guide-metric-desc">Deadweight Loss — потери благосостояния. DWL = W_eff − W. Чем больше DWL, тем менее эффективна стратегия для общества.</div>
+                </div>
+            </div>
+
+            <h2 class="guide-section-title">Полезные возможности</h2>
+            <div class="guide-tips-grid">
+                <div class="guide-tips-card">
+                    <div class="guide-tips-icon">📷</div>
+                    <div class="guide-tips-title">Снапшоты</div>
+                    <p>После каждого запуска нажимай «📷 Снапшот» в блоке Итогов. Можно сохранить до 5 снапшотов и сравнить разные стратегии на одном экране с дельтой изменений.</p>
+                </div>
+                <div class="guide-tips-card">
+                    <div class="guide-tips-icon">⚖️</div>
+                    <div class="guide-tips-title">Сравнение режимов</div>
+                    <p>Вкладка «Сравнение режимов» в правой колонке запускает все 4 режима на одном наборе покупателей и показывает таблицу и график — удобно для учебного анализа.</p>
+                </div>
+                <div class="guide-tips-card">
+                    <div class="guide-tips-icon">📖</div>
+                    <div class="guide-tips-title">Готовые сценарии</div>
+                    <p>В левой панели есть 4 готовых сценария из учебника. Загрузи любой и сразу запускай — это хорошая отправная точка перед тем как настраивать всё вручную.</p>
+                </div>
+                <div class="guide-tips-card">
+                    <div class="guide-tips-icon">⧉</div>
+                    <div class="guide-tips-title">Дублирование покупателей</div>
+                    <p>На карточке каждого покупателя есть кнопка ⧉ — она создаёт копию. Удобно когда нужно одновременно отправить одинаковых покупателей на разные заводы.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
 
     <section id="simulator-tab" class="tab-content active">
         <main class="simulator-layout">
 
             <section class="panel controls">
-                <h2>Настройки фирмы</h2>
 
-                <div class="field">
-                    <label>Режим ценообразования</label>
-                    <select id="pricing-mode">
-                        <option value="uniform">Uniform</option>
-                        <option value="pd1">PD1</option>
-                        <option value="pd2">PD2</option>
-                        <option value="pd3">PD3</option>
-                    </select>
+                <!-- Сценарии -->
+                <div class="scenarios-section">
+                    <h2>Готовые сценарии</h2>
+                    <div class="scenarios-grid">
+                        <button class="scenario-btn" data-scenario="textbook">
+                            <span class="scenario-icon">📖</span>
+                            <span class="scenario-name">Учебник: монополия</span>
+                            <span class="scenario-desc">1 покупатель, единая цена</span>
+                        </button>
+                        <button class="scenario-btn" data-scenario="segments">
+                            <span class="scenario-icon">👥</span>
+                            <span class="scenario-name">Три сегмента</span>
+                            <span class="scenario-desc">PD3 vs Uniform</span>
+                        </button>
+                        <button class="scenario-btn" data-scenario="twofirms">
+                            <span class="scenario-icon">🏭</span>
+                            <span class="scenario-name">PD1 vs Uniform</span>
+                            <span class="scenario-desc">Два завода, одни покупатели</span>
+                        </button>
+                        <button class="scenario-btn" data-scenario="twotariff">
+                            <span class="scenario-icon">💰</span>
+                            <span class="scenario-name">Двухчастный тариф</span>
+                            <span class="scenario-desc">F + p×q vs Uniform</span>
+                        </button>
+                    </div>
+                    <div id="scenario-description" class="scenario-description hidden"></div>
                 </div>
 
-                <div id="pricing-params-block"></div>
-
-                <div class="field">
-                    <label>MC (предельные издержки)</label>
-                    <input type="number" id="mc" value="2" min="0" step="0.1">
+                <div class="firm-section firm-section-a">
+                    <h2>Фирма A</h2>
+                    <div class="field">
+                        <label>Режим ценообразования</label>
+                        <select id="pricing-mode-a">
+                            <option value="uniform">Uniform</option>
+                            <option value="pd1">PD1</option>
+                            <option value="pd2">PD2</option>
+                            <option value="pd3">PD3</option>
+                        </select>
+                    </div>
+                    <div id="pricing-params-block-a"></div>
+                    <div class="field">
+                        <label>MC (предельные издержки)</label>
+                        <input type="number" id="mc-a" value="2" min="0" step="0.1">
+                    </div>
+                    <div class="field">
+                        <label>Мощность (ед./день)</label>
+                        <input type="number" id="capacity-a" value="20" min="1" step="1">
+                    </div>
                 </div>
 
-                <div class="field">
-                    <label>Capacity per day</label>
-                    <input type="number" id="capacity" value="20" min="1" step="1">
+                <div class="firm-section firm-section-b">
+                    <h2>Фирма B</h2>
+                    <div class="field">
+                        <label>Режим ценообразования</label>
+                        <select id="pricing-mode-b">
+                            <option value="uniform">Uniform</option>
+                            <option value="pd1">PD1</option>
+                            <option value="pd2">PD2</option>
+                            <option value="pd3">PD3</option>
+                        </select>
+                    </div>
+                    <div id="pricing-params-block-b"></div>
+                    <div class="field">
+                        <label>MC (предельные издержки)</label>
+                        <input type="number" id="mc-b" value="2" min="0" step="0.1">
+                    </div>
+                    <div class="field">
+                        <label>Мощность (ед./день)</label>
+                        <input type="number" id="capacity-b" value="20" min="1" step="1">
+                    </div>
                 </div>
 
-                <h2>Покупатели</h2>
+                <div class="buyers-section-header">
+                    <h2 class="buyers-heading">Покупатели</h2>
+                    <label class="advanced-toggle-label">
+                        <input type="checkbox" id="advanced-mode-toggle">
+                        Доп. параметры
+                    </label>
+                </div>
                 <div id="buyers-list"></div>
                 <button id="add-buyer-btn" class="secondary-btn">+ Добавить покупателя</button>
 
@@ -54,35 +261,35 @@
                     <button id="run-btn">Запустить симуляцию</button>
                     <button id="download-btn" class="secondary-btn" disabled>Скачать отчёт .txt</button>
                 </div>
+
             </section>
 
             <div class="right-column">
+
                 <section class="panel battlefield-panel">
                     <h2>Игровое поле</h2>
                     <div id="mini-map" class="mini-map"></div>
-                    <div id="battlefield" class="battlefield">
-                        <div class="firm-card" id="firm-card">
-                            <div class="firm-title">Monopolist / Factory</div>
-                            <div class="firm-mode">Режим: ожидание запуска</div>
-                            <div class="firm-stats">
-                                <div class="mini-stat"><span class="mini-stat-label">Q</span><span class="mini-stat-value">—</span></div>
-                                <div class="mini-stat"><span class="mini-stat-label">Revenue</span><span class="mini-stat-value">—</span></div>
-                                <div class="mini-stat"><span class="mini-stat-label">Profit</span><span class="mini-stat-value">—</span></div>
-                            </div>
-                        </div>
-                        <div class="buyers-zone">
-                            <div class="buyers-zone-title">Покупатели</div>
-                            <div id="buyers-grid" class="buyers-grid">
-                                <div class="placeholder-text">Добавь покупателей в левой панели.</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="battlefield" class="battlefield"></div>
                 </section>
 
                 <div class="panel" id="totals-section">
-                    <h2>Итоги</h2>
-                    <div id="totals-grid" class="totals-grid">
+                    <div class="panel-header">
+                        <h2>Итоги</h2>
+                        <button id="save-snapshot-btn" class="snap-save-btn" disabled>📷 Снапшот</button>
+                    </div>
+                    <div id="totals-content">
                         <div class="placeholder-text">Запусти симуляцию, чтобы увидеть итоги.</div>
+                    </div>
+                </div>
+
+                <div class="panel" id="snapshots-section">
+                    <div class="panel-header">
+                        <h2>Снапшоты <span id="snap-count-badge" class="snap-count-badge"></span></h2>
+                        <button id="snap-clear-btn" class="snap-clear-btn secondary-btn" style="display:none">Очистить все</button>
+                    </div>
+                    <p class="hint" style="margin-top:0">Сохраняй снапшоты после запуска, чтобы сравнивать разные стратегии. Максимум 5.</p>
+                    <div id="snapshots-container">
+                        <div class="placeholder-text">Нажми «📷 Снапшот» в блоке Итогов после запуска.</div>
                     </div>
                 </div>
 
@@ -104,6 +311,55 @@
                     <button id="toggle-report-btn" class="secondary-btn">▶ Показать текстовый отчёт</button>
                     <div id="result-box" class="report-box hidden">Отчёт появится после запуска симуляции.</div>
                 </div>
+
+                <div class="panel" id="compare-section">
+                    <h2>Сравнение режимов</h2>
+                    <p class="hint">Использует всех покупателей, MC и мощность Фирмы A.</p>
+                    <div class="compare-params-grid">
+                        <div class="compare-mode-params">
+                            <div class="compare-mode-label">Uniform</div>
+                            <div class="field">
+                                <label>p</label>
+                                <input type="number" id="cmp-uniform-p" value="4" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="compare-mode-params">
+                            <div class="compare-mode-label">PD1</div>
+                            <p class="hint" style="margin:8px 0 0">Без параметров</p>
+                        </div>
+                        <div class="compare-mode-params">
+                            <div class="compare-mode-label">PD2</div>
+                            <div class="field">
+                                <label>F</label>
+                                <input type="number" id="cmp-pd2-F" value="5" min="0" step="0.1">
+                            </div>
+                            <div class="field">
+                                <label>p</label>
+                                <input type="number" id="cmp-pd2-p" value="3" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="compare-mode-params">
+                            <div class="compare-mode-label">PD3</div>
+                            <div class="field">
+                                <label>pA</label>
+                                <input type="number" id="cmp-pd3-pA" value="3" min="0" step="0.1">
+                            </div>
+                            <div class="field">
+                                <label>pB</label>
+                                <input type="number" id="cmp-pd3-pB" value="5" min="0" step="0.1">
+                            </div>
+                            <div class="field">
+                                <label>pC</label>
+                                <input type="number" id="cmp-pd3-pC" value="7" min="0" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    <button id="compare-btn">Сравнить все режимы</button>
+                    <div id="compare-results">
+                        <div class="placeholder-text">Настрой параметры и нажми «Сравнить».</div>
+                    </div>
+                </div>
+
             </div>
 
         </main>
@@ -255,14 +511,8 @@
                             <text x="90" y="160" font-size="14" font-weight="700" fill="#166534">CS</text>
                             <text x="75" y="176" font-size="12" fill="#166534">(F ≤ CS)</text>
                             <text x="100" y="302" font-size="14" font-weight="700" fill="#1d4ed8">Markup Profit</text>
-                            <text x="100" y="320" font-size="12" fill="#1d4ed8">(p − MC) × q*</text>
                             <text x="18" y="224" font-size="13" fill="#2563eb">p</text>
                             <text x="12" y="364" font-size="13" fill="#dc2626">MC</text>
-                            <rect x="440" y="38" width="210" height="76" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
-                            <rect x="454" y="52" width="14" height="14" fill="#86efac"/>
-                            <text x="474" y="63" font-size="13" fill="#374151">CS (часть идёт в F)</text>
-                            <rect x="454" y="72" width="14" height="14" fill="#93c5fd"/>
-                            <text x="474" y="83" font-size="13" fill="#374151">Markup Profit (p−MC)·q</text>
                         </svg>
                     </div>
                 </section>
@@ -303,26 +553,12 @@
                             <line x1="84" y1="185" x2="84" y2="410" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 4"/>
                             <line x1="348" y1="260" x2="348" y2="410" stroke="#10b981" stroke-width="1.5" stroke-dasharray="5 4"/>
                             <line x1="617" y1="330" x2="617" y2="410" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4"/>
-                            <circle cx="84" cy="185" r="3.5" fill="#2563eb"/>
-                            <circle cx="348" cy="260" r="3.5" fill="#10b981"/>
-                            <circle cx="617" cy="330" r="3.5" fill="#f59e0b"/>
                             <text x="34" y="180" font-size="13" font-weight="700" fill="#2563eb">pA</text>
                             <text x="262" y="255" font-size="13" font-weight="700" fill="#10b981">pB</text>
                             <text x="490" y="325" font-size="13" font-weight="700" fill="#f59e0b">pC</text>
-                            <text x="38" y="320" font-size="12" font-weight="700" fill="#1d4ed8">Rev A</text>
-                            <text x="276" y="348" font-size="12" font-weight="700" fill="#047857">Rev B</text>
-                            <text x="524" y="378" font-size="12" font-weight="700" fill="#b45309">Rev C</text>
                             <text x="90" y="435" font-size="14" font-weight="700" fill="#374151">A</text>
                             <text x="320" y="435" font-size="14" font-weight="700" fill="#374151">B</text>
                             <text x="545" y="435" font-size="14" font-weight="700" fill="#374151">C</text>
-                            <text x="48" y="450" font-size="11" fill="#6b7280">высокая цена</text>
-                            <text x="272" y="450" font-size="11" fill="#6b7280">средняя цена</text>
-                            <text x="500" y="450" font-size="11" fill="#6b7280">низкая цена</text>
-                            <rect x="400" y="38" width="258" height="56" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
-                            <rect x="414" y="52" width="14" height="14" fill="#86efac"/>
-                            <text x="434" y="63" font-size="13" fill="#374151">CS (остаток у покупателей)</text>
-                            <rect x="414" y="72" width="14" height="14" fill="#bfdbfe"/>
-                            <text x="434" y="83" font-size="13" fill="#374151">Revenue = p × q (фирма)</text>
                         </svg>
                     </div>
                 </section>
@@ -337,12 +573,17 @@
                     <p><strong>PS</strong> — producer surplus, производительный излишек (= Profit в этой модели).</p>
                     <p><strong>W</strong> — общественное благосостояние:</p>
                     <p class="formula">W = CS + PS</p>
+                    <p><strong>W_eff</strong> — эффективное благосостояние при конкурентной цене P = MC.</p>
+                    <p><strong>DWL</strong> — потери благосостояния:</p>
+                    <p class="formula">DWL = W_eff − W</p>
                 </section>
 
                 <section id="connection" class="theory-section">
                     <h2>6. Связь теории с симулятором</h2>
                     <p>Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя задаётся функция спроса, строится функция платежа <strong>T(q)</strong>, покупатель выбирает объём, максимизируя полезность.</p>
-                    <p>Индивидуальные решения агрегируются в показатели фирмы и рынка: Q, Revenue, Profit, CS, PS, W.</p>
+                    <p>Индивидуальные решения агрегируются в показатели фирмы и рынка: Q, Revenue, Profit, CS, PS, W, DWL.</p>
+                    <p>Раздел <strong>«Сравнение режимов»</strong> позволяет запустить все четыре режима на одном наборе покупателей и увидеть, как меняются CS, PS, W и DWL при разных стратегиях ценообразования.</p>
+                    <p>Раздел <strong>«Готовые сценарии»</strong> содержит предварительно настроенные примеры, соответствующие типичным задачам из учебников по микроэкономике.</p>
                 </section>
 
             </main>

@@ -1,365 +1,963 @@
 const BACKEND_BASE_URL = "http://127.0.0.1:8000";
 
-const runBtn = document.getElementById("run-btn");
-const downloadBtn = document.getElementById("download-btn");
-const resultBox = document.getElementById("result-box");
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabContents = document.querySelectorAll(".tab-content");
-const buyersGrid = document.getElementById("buyers-grid");
-const firmCard = document.getElementById("firm-card");
-const pricingModeSelect = document.getElementById("pricing-mode");
-const pricingParamsBlock = document.getElementById("pricing-params-block");
-const buyersList = document.getElementById("buyers-list");
-const addBuyerBtn = document.getElementById("add-buyer-btn");
-const totalsGrid = document.getElementById("totals-grid");
-const buyersTableContainer = document.getElementById("buyers-table-container");
-const toggleReportBtn = document.getElementById("toggle-report-btn");
-const chartsContainer = document.getElementById("charts-container");
-
-let lastReportText = "";
-let buyerCounter = 1;
-let buyers = [];
-let welfareChart = null;
-let buyersChart = null;
-
-function renderPricingParams(mode) {
-    let html = "";
-    if (mode === "uniform") {
-        html = `<div class="field"><label>Цена p</label><input type="number" id="param-p" value="4" min="0" step="0.1"></div>`;
-    } else if (mode === "pd1") {
-        html = `<p class="hint">PD1 не требует дополнительных параметров.</p>`;
-    } else if (mode === "pd2") {
-        html = `
-            <div class="field"><label>Фиксированный платёж F</label><input type="number" id="param-F" value="5" min="0" step="0.1"></div>
-            <div class="field"><label>Цена за единицу p</label><input type="number" id="param-p" value="3" min="0" step="0.1"></div>
-        `;
-    } else if (mode === "pd3") {
-        html = `
-            <div class="field"><label>Цена для сегмента A</label><input type="number" id="param-pA" value="3" min="0" step="0.1"></div>
-            <div class="field"><label>Цена для сегмента B</label><input type="number" id="param-pB" value="5" min="0" step="0.1"></div>
-            <div class="field"><label>Цена для сегмента C</label><input type="number" id="param-pC" value="7" min="0" step="0.1"></div>
-        `;
+const SCENARIOS = {
+    textbook: {
+        name: "Учебник: монополия",
+        description: "Классика из учебника. Один покупатель, MB = 10 − (k−1). Фирма A — единая цена p=6, MC=2. Попробуй изменить p и посмотри как меняются Profit, CS и DWL.",
+        firmA: { mode: "uniform", params: { p: 6 }, mc: 2, capacity: 20 },
+        firmB: { mode: "uniform", params: { p: 6 }, mc: 2, capacity: 20 },
+        buyers: [
+            { factory: "A", segment: "A", money: 1000, target_stock: 8, stock: 0, demand_type: "linear", a: 10, b: 1 }
+        ]
+    },
+    segments: {
+        name: "Три сегмента",
+        description: "Три покупателя из сегментов A, B, C. Фирма A — PD3 с разными ценами по сегментам. Переключи на Uniform и сравни — видно как фирма теряет выручку при одной цене.",
+        firmA: { mode: "pd3", params: { segment_prices: { A: 8, B: 5, C: 3 } }, mc: 1, capacity: 50 },
+        firmB: { mode: "uniform", params: { p: 5 }, mc: 1, capacity: 50 },
+        buyers: [
+            { factory: "A", segment: "A", money: 1000, target_stock: 5, stock: 0, demand_type: "linear", a: 12, b: 2 },
+            { factory: "A", segment: "B", money: 1000, target_stock: 5, stock: 0, demand_type: "linear", a: 8,  b: 1 },
+            { factory: "A", segment: "C", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 5,  b: 0.5 }
+        ]
+    },
+    twofirms: {
+        name: "PD1 vs Uniform",
+        description: "Одинаковые пары покупателей на двух заводах. Фирма A (PD1) забирает весь CS, DWL=0. Фирма B (Uniform) оставляет часть CS покупателям, но теряет в эффективности.",
+        firmA: { mode: "pd1", params: {}, mc: 2, capacity: 30 },
+        firmB: { mode: "uniform", params: { p: 5 }, mc: 2, capacity: 30 },
+        buyers: [
+            { factory: "A", segment: "A", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 12, b: 2 },
+            { factory: "A", segment: "B", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 8,  b: 1.5 },
+            { factory: "B", segment: "A", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 12, b: 2 },
+            { factory: "B", segment: "B", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 8,  b: 1.5 }
+        ]
+    },
+    twotariff: {
+        name: "Двухчастный тариф",
+        description: "Фирма A — PD2: взнос F=8 + цена p=2 за единицу. Фирма B — единая цена p=5. Взнос F съедает CS покупателя, но низкая p побуждает покупать больше.",
+        firmA: { mode: "pd2", params: { F: 8, p: 2 }, mc: 1, capacity: 30 },
+        firmB: { mode: "uniform", params: { p: 5 }, mc: 1, capacity: 30 },
+        buyers: [
+            { factory: "A", segment: "A", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 10, b: 1.5 },
+            { factory: "A", segment: "A", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 9,  b: 1.5 },
+            { factory: "B", segment: "B", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 10, b: 1.5 },
+            { factory: "B", segment: "B", money: 1000, target_stock: 6, stock: 0, demand_type: "linear", a: 9,  b: 1.5 }
+        ]
     }
-    pricingParamsBlock.innerHTML = html;
+};
+
+const MODE_NAMES = {
+    uniform: "Uniform",
+    pd1:     "PD1 — первая степень",
+    pd2:     "PD2 — двухчастный тариф",
+    pd3:     "PD3 — третья степень"
+};
+
+const MODE_SHORT = {
+    uniform: "Uniform",
+    pd1:     "PD1",
+    pd2:     "PD2",
+    pd3:     "PD3"
+};
+
+const METRIC_TOOLTIPS = {
+    Q:       "Q — суммарный объём покупок всех покупателей у этой фирмы",
+    Revenue: "Revenue = Σ T(q) — суммарная выручка фирмы (все платежи покупателей)",
+    Profit:  "Profit = Revenue − MC·Q — прибыль фирмы после переменных издержек",
+    CS:      "CS = Σ [V(q) − T(q)] — потребительский излишек: что покупатели получили сверх уплаченного",
+    PS:      "PS = Profit — производительный излишек (в этой модели совпадает с прибылью)",
+    W:       "W = CS + PS — общественное благосостояние",
+    W_eff:   "W_eff — максимальное благосостояние при P=MC (конкурентный рынок). Эталон для DWL.",
+    DWL:     "DWL = W_eff − W — потери благосостояния из-за монопольного ценообразования. Цель — минимизировать."
+};
+
+
+const runBtn               = document.getElementById("run-btn");
+const downloadBtn          = document.getElementById("download-btn");
+const resultBox            = document.getElementById("result-box");
+const tabButtons           = document.querySelectorAll(".tab-btn");
+const tabContents          = document.querySelectorAll(".tab-content");
+const buyersList           = document.getElementById("buyers-list");
+const addBuyerBtn          = document.getElementById("add-buyer-btn");
+const toggleReportBtn      = document.getElementById("toggle-report-btn");
+const chartsContainer      = document.getElementById("charts-container");
+const buyersTableContainer = document.getElementById("buyers-table-container");
+const compareBtn           = document.getElementById("compare-btn");
+const advancedToggle       = document.getElementById("advanced-mode-toggle");
+const saveSnapshotBtn      = document.getElementById("save-snapshot-btn");
+const snapClearBtn         = document.getElementById("snap-clear-btn");
+const snapshotsContainer   = document.getElementById("snapshots-container");
+
+
+let lastReportText  = "";
+let buyerCounter    = 1;
+let buyers          = [];
+let welfareChart    = null;
+let buyersChart     = null;
+let compareChart    = null;
+let snapChart       = null;
+let hasRunOnce      = false;
+const buyerPositions = {};
+
+// Snapshot state
+let snapshots       = [];
+let snapshotCounter = 0;
+let lastDataA       = null;
+let lastDataB       = null;
+let lastModeA       = "uniform";
+let lastModeB       = "uniform";
+
+
+function setDirty() {
+    if (!hasRunOnce) return;
+    runBtn.classList.add("run-btn--dirty");
+    runBtn.textContent = "↺ Параметры изменились — перезапусти";
 }
 
-function getPricingParams(mode) {
-    if (mode === "uniform") return { p: parseFloat(document.getElementById("param-p").value) };
-    if (mode === "pd1") return {};
-    if (mode === "pd2") return {
-        F: parseFloat(document.getElementById("param-F").value),
-        p: parseFloat(document.getElementById("param-p").value)
+function setClean() {
+    hasRunOnce = true;
+    runBtn.classList.remove("run-btn--dirty");
+    runBtn.textContent = "Запустить симуляцию";
+}
+
+
+function captureFirmState(suffix) {
+    const mode     = document.getElementById(`pricing-mode-${suffix}`).value;
+    const mc       = parseFloat(document.getElementById(`mc-${suffix}`).value);
+    const capacity = parseInt(document.getElementById(`capacity-${suffix}`).value);
+    let params = {};
+    if (mode === "uniform") {
+        params.p = parseFloat(document.getElementById(`param-p-${suffix}`)?.value || 4);
+    } else if (mode === "pd2") {
+        params.F = parseFloat(document.getElementById(`param-F-${suffix}`)?.value || 5);
+        params.p = parseFloat(document.getElementById(`param-p-${suffix}`)?.value || 3);
+    } else if (mode === "pd3") {
+        params.segment_prices = {
+            A: parseFloat(document.getElementById(`param-pA-${suffix}`)?.value || 3),
+            B: parseFloat(document.getElementById(`param-pB-${suffix}`)?.value || 5),
+            C: parseFloat(document.getElementById(`param-pC-${suffix}`)?.value || 7)
+        };
+    }
+    return { mode, mc, capacity, params };
+}
+
+function collectOneBuyerData(id) {
+    const demandType = document.getElementById(`b${id}-demand_type`)?.value || "linear";
+    const data = {
+        factory:      document.getElementById(`b${id}-factory`)?.value     || "A",
+        segment:      document.getElementById(`b${id}-segment`)?.value     || "A",
+        a:            parseFloat(document.getElementById(`b${id}-a`)?.value       || 10),
+        b:            parseFloat(document.getElementById(`b${id}-b`)?.value       || 2),
+        target_stock: parseInt(document.getElementById(`b${id}-target_stock`)?.value || 5),
+        money:        parseFloat(document.getElementById(`b${id}-money`)?.value   || 1000),
+        stock:        parseInt(document.getElementById(`b${id}-stock`)?.value     || 0),
+        demand_type:  demandType
     };
-    if (mode === "pd3") return {
-        segment_prices: {
-            A: parseFloat(document.getElementById("param-pA").value),
-            B: parseFloat(document.getElementById("param-pB").value),
-            C: parseFloat(document.getElementById("param-pC").value)
-        }
-    };
-    return {};
+    if (demandType === "inverse_square") {
+        data.A = parseFloat(document.getElementById(`b${id}-A`)?.value || 20);
+    } else if (demandType === "step") {
+        const raw = document.getElementById(`b${id}-values`)?.value || "";
+        data.values = raw.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    }
+    return data;
+}
+
+function saveState() {
+    try {
+        const state = {
+            firmA: captureFirmState("a"),
+            firmB: captureFirmState("b"),
+            buyers: buyers.map(b => collectOneBuyerData(b.id))
+        };
+        localStorage.setItem("mss_state", JSON.stringify(state));
+    } catch (e) {}
+}
+
+function restoreFirmState(firmState, suffix) {
+    document.getElementById(`pricing-mode-${suffix}`).value = firmState.mode || "uniform";
+    document.getElementById(`mc-${suffix}`).value            = firmState.mc   || 2;
+    document.getElementById(`capacity-${suffix}`).value      = firmState.capacity || 20;
+    renderPricingParams(firmState.mode || "uniform", suffix);
+    setFirmParams(firmState, suffix);
+}
+
+function loadSavedState() {
+    try {
+        const raw = localStorage.getItem("mss_state");
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        if (!state || !Array.isArray(state.buyers) || state.buyers.length === 0) return false;
+        if (state.firmA) restoreFirmState(state.firmA, "a");
+        if (state.firmB) restoreFirmState(state.firmB, "b");
+        state.buyers.forEach(data => addBuyer(data));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+
+function mbJS(demandType, params, k) {
+    if (k <= 0) return 0;
+    if (demandType === "linear")
+        return Math.max((params.a || 0) - (params.b || 0) * (k - 1), 0);
+    if (demandType === "inverse_square")
+        return (params.A || 20) / (k * k);
+    if (demandType === "step") {
+        const vals = params.values || [];
+        return k <= vals.length ? (vals[k - 1] || 0) : 0;
+    }
+    return 0;
 }
 
 function renderDemandParams(buyerId, demandType) {
     const container = document.getElementById(`demand-params-${buyerId}`);
     if (!container) return;
-    let html = "";
-    if (demandType === "linear") {
-        html = `
-            <div class="field"><label>a (макс. MB)</label><input type="number" id="b${buyerId}-a" value="10" min="0" step="0.1"></div>
-            <div class="field"><label>b (наклон)</label><input type="number" id="b${buyerId}-b" value="2" min="0.01" step="0.1"></div>
-        `;
-    } else if (demandType === "inverse_square") {
-        html = `<div class="field"><label>A (коэффициент)</label><input type="number" id="b${buyerId}-A" value="20" min="0.01" step="0.1"></div>`;
+    if (demandType === "linear") { container.innerHTML = ""; return; }
+    if (demandType === "inverse_square") {
+        container.innerHTML = `<div class="field"><label>A (коэффициент)</label><input type="number" id="b${buyerId}-A" value="20" min="0.01" step="0.1"></div>`;
     } else if (demandType === "step") {
-        html = `<div class="field"><label>Values (через запятую)</label><input type="text" id="b${buyerId}-values" value="10, 10, 6, 6, 2" placeholder="10, 8, 6, 4, 2"></div>`;
+        container.innerHTML = `<div class="field"><label>Values (через запятую)</label><input type="text" id="b${buyerId}-values" value="10, 10, 6, 6, 2"></div>`;
     }
-    container.innerHTML = html;
+    document.getElementById(`demand-params-${buyerId}`)
+        ?.querySelectorAll("input")
+        .forEach(el => el.addEventListener("input", () => renderMiniCurve(buyerId)));
 }
 
 function getDemandParams(buyerId, demandType) {
     if (demandType === "linear") return {
-        a: parseFloat(document.getElementById(`b${buyerId}-a`).value),
-        b: parseFloat(document.getElementById(`b${buyerId}-b`).value)
+        a: parseFloat(document.getElementById(`b${buyerId}-a`)?.value || 10),
+        b: parseFloat(document.getElementById(`b${buyerId}-b`)?.value || 2)
     };
     if (demandType === "inverse_square") return {
-        A: parseFloat(document.getElementById(`b${buyerId}-A`).value)
+        A: parseFloat(document.getElementById(`b${buyerId}-A`)?.value || 20)
     };
     if (demandType === "step") {
-        const raw = document.getElementById(`b${buyerId}-values`).value;
+        const raw = document.getElementById(`b${buyerId}-values`)?.value || "";
         return { values: raw.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v)) };
     }
     return {};
 }
 
-function getBuyerDisplayData(id) {
-    return {
-        segment: document.getElementById(`b${id}-segment`)?.value || "A",
-        demandType: document.getElementById(`b${id}-demand_type`)?.value || "linear"
-    };
-}
-
-function renderMiniMapWaiting() {
-    const mapEl = document.getElementById("mini-map");
-    if (!mapEl) return;
-
-    if (buyers.length === 0) {
-        mapEl.innerHTML = `<div class="map-firm">🏭</div><div class="map-path"></div>`;
-        return;
-    }
-
-    const mapWidth = mapEl.offsetWidth || 600;
-    const step = Math.min(46, Math.floor(76 / buyers.length));
-
-    const figures = buyers.map((buyer, i) => {
-        const top = 12 + i * step;
-        const left = mapWidth - 60 - i * 5;
-        return `<div class="map-figure" id="map-fig-${buyer.id}" style="left:${left}px; top:${top}px">
-            🧍<span class="map-figure-label">#${buyer.id}</span>
-        </div>`;
+function renderMiniCurve(buyerId) {
+    const el = document.getElementById(`mini-curve-${buyerId}`);
+    if (!el) return;
+    const demandType  = document.getElementById(`b${buyerId}-demand_type`)?.value || "linear";
+    const targetStock = parseInt(document.getElementById(`b${buyerId}-target_stock`)?.value || 5);
+    const params      = getDemandParams(buyerId, demandType);
+    const gap  = Math.min(Math.max(targetStock, 1), 10);
+    const mbs  = Array.from({ length: gap }, (_, i) => mbJS(demandType, params, i + 1));
+    const maxMB = Math.max(...mbs, 0.01);
+    const svgW = 200, svgH = 52, plotH = svgH - 12;
+    const barW = Math.floor((svgW - 4) / gap) - 2;
+    const bars = mbs.map((mb, i) => {
+        const h = Math.max(Math.round((mb / maxMB) * plotH), mb > 0 ? 2 : 0);
+        const x = 2 + i * (barW + 2);
+        return `<rect x="${x}" y="${plotH - h}" width="${barW}" height="${h}" fill="#93c5fd" rx="2"/>
+                <text x="${x + barW / 2}" y="${svgH}" font-size="8" fill="#9ca3af" text-anchor="middle">${i + 1}</text>`;
     }).join("");
-
-    mapEl.innerHTML = `<div class="map-firm">🏭</div><div class="map-path"></div>${figures}`;
+    el.innerHTML = `
+        <div class="mini-curve-label">MB(k) — кривая спроса</div>
+        <svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;display:block">
+            <line x1="0" y1="${plotH}" x2="${svgW}" y2="${plotH}" stroke="#e5e7eb" stroke-width="1"/>
+            ${bars}
+        </svg>`;
 }
 
-function animateMiniMap(buyers_results) {
-    buyers_results.forEach((b, i) => {
-        const fig = document.getElementById(`map-fig-${b.id}`);
-        if (!fig) return;
-        if (b.q > 0) {
-            fig.innerHTML = `🚶<span class="map-figure-label">#${b.id}</span>`;
-            setTimeout(() => { fig.style.left = "72px"; }, i * 300 + 100);
-        } else {
-            fig.innerHTML = `🚫<span class="map-figure-label">#${b.id}</span>`;
+
+function renderPricingParams(mode, suffix) {
+    const block = document.getElementById(`pricing-params-block-${suffix}`);
+    if (!block) return;
+    let html = "";
+    if (mode === "uniform") {
+        html = `<div class="field"><label>Цена p</label><input type="number" id="param-p-${suffix}" value="4" min="0" step="0.1"></div>`;
+    } else if (mode === "pd1") {
+        html = `<p class="hint">PD1 не требует дополнительных параметров.</p>`;
+    } else if (mode === "pd2") {
+        html = `<div class="field"><label>F (взнос)</label><input type="number" id="param-F-${suffix}" value="5" min="0" step="0.1"></div>
+                <div class="field"><label>p (цена за ед.)</label><input type="number" id="param-p-${suffix}" value="3" min="0" step="0.1"></div>`;
+    } else if (mode === "pd3") {
+        html = `<div class="field"><label>pA</label><input type="number" id="param-pA-${suffix}" value="3" min="0" step="0.1"></div>
+                <div class="field"><label>pB</label><input type="number" id="param-pB-${suffix}" value="5" min="0" step="0.1"></div>
+                <div class="field"><label>pC</label><input type="number" id="param-pC-${suffix}" value="7" min="0" step="0.1"></div>`;
+    }
+    block.innerHTML = html;
+}
+
+function getPricingParams(mode, suffix) {
+    if (mode === "uniform") return { p: parseFloat(document.getElementById(`param-p-${suffix}`).value) };
+    if (mode === "pd1")     return {};
+    if (mode === "pd2")     return {
+        F: parseFloat(document.getElementById(`param-F-${suffix}`).value),
+        p: parseFloat(document.getElementById(`param-p-${suffix}`).value)
+    };
+    if (mode === "pd3")     return {
+        segment_prices: {
+            A: parseFloat(document.getElementById(`param-pA-${suffix}`).value),
+            B: parseFloat(document.getElementById(`param-pB-${suffix}`).value),
+            C: parseFloat(document.getElementById(`param-pC-${suffix}`).value)
         }
+    };
+    return {};
+}
+
+function setFirmParams(firmConfig, suffix) {
+    const p = firmConfig.params || {};
+    if (firmConfig.mode === "uniform") {
+        const el = document.getElementById(`param-p-${suffix}`);
+        if (el && p.p !== undefined) el.value = p.p;
+    } else if (firmConfig.mode === "pd2") {
+        const F  = document.getElementById(`param-F-${suffix}`);
+        const pp = document.getElementById(`param-p-${suffix}`);
+        if (F  && p.F !== undefined) F.value  = p.F;
+        if (pp && p.p !== undefined) pp.value = p.p;
+    } else if (firmConfig.mode === "pd3") {
+        const sp = p.segment_prices || {};
+        const pA = document.getElementById(`param-pA-${suffix}`);
+        const pB = document.getElementById(`param-pB-${suffix}`);
+        const pC = document.getElementById(`param-pC-${suffix}`);
+        if (pA) pA.value = sp.A !== undefined ? sp.A : (p.pA !== undefined ? p.pA : pA.value);
+        if (pB) pB.value = sp.B !== undefined ? sp.B : (p.pB !== undefined ? p.pB : pB.value);
+        if (pC) pC.value = sp.C !== undefined ? sp.C : (p.pC !== undefined ? p.pC : pC.value);
+    }
+}
+
+
+function createBuyerFormHTML(id) {
+    return `
+        <div class="buyer-form-header">
+            <span class="buyer-form-title">Покупатель #${id}</span>
+            <div class="buyer-form-actions">
+                <button class="duplicate-buyer-btn" data-id="${id}" title="Дублировать">⧉</button>
+                <button class="remove-buyer-btn" data-id="${id}" title="Удалить">✕</button>
+            </div>
+        </div>
+        <div class="buyer-form-row">
+            <div class="field">
+                <label>Завод</label>
+                <select id="b${id}-factory">
+                    <option value="A">Фирма A</option>
+                    <option value="B">Фирма B</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Сегмент</label>
+                <select id="b${id}-segment">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
+            </div>
+        </div>
+        <div id="demand-simple-${id}">
+            <div class="field">
+                <label>Ценность 1-й единицы (₽)</label>
+                <input type="number" id="b${id}-a" value="10" min="0" step="0.1">
+            </div>
+            <div class="field">
+                <label>Снижение ценности (₽ на каждую следующую)</label>
+                <input type="number" id="b${id}-b" value="2" min="0" step="0.1">
+            </div>
+        </div>
+        <div class="field">
+            <label>Хочет купить, шт.</label>
+            <input type="number" id="b${id}-target_stock" value="5" min="1" step="1">
+        </div>
+        <div id="mini-curve-${id}" class="mini-curve"></div>
+        <div class="advanced-fields">
+            <div class="advanced-divider">Дополнительно</div>
+            <div class="field">
+                <label>Бюджет (₽)</label>
+                <input type="number" id="b${id}-money" value="1000" min="0" step="1">
+            </div>
+            <div class="field">
+                <label>Текущий запас</label>
+                <input type="number" id="b${id}-stock" value="0" min="0" step="1">
+            </div>
+            <div class="field">
+                <label>Тип спроса</label>
+                <select id="b${id}-demand_type">
+                    <option value="linear">linear</option>
+                    <option value="inverse_square">inverse_square</option>
+                    <option value="step">step</option>
+                </select>
+            </div>
+            <div id="demand-params-${id}"></div>
+        </div>`;
+}
+
+function attachBuyerListeners(id) {
+    const div = document.getElementById(`buyer-form-${id}`);
+
+    div.querySelector(".remove-buyer-btn").addEventListener("click", () => {
+        buyers = buyers.filter(b => b.id !== id);
+        delete buyerPositions[id];
+        div.remove();
+        renderBattlefieldWaiting();
+        saveState();
+        setDirty();
+    });
+
+    div.querySelector(".duplicate-buyer-btn").addEventListener("click", () => {
+        const data = collectOneBuyerData(id);
+        addBuyer(data);
+        saveState();
+        setDirty();
+    });
+
+    document.getElementById(`b${id}-factory`).addEventListener("change", () => renderBattlefieldWaiting());
+
+    ["a", "b"].forEach(f => document.getElementById(`b${id}-${f}`)?.addEventListener("input", () => renderMiniCurve(id)));
+    document.getElementById(`b${id}-target_stock`).addEventListener("input", () => renderMiniCurve(id));
+
+    document.getElementById(`b${id}-demand_type`).addEventListener("change", (e) => {
+        const type = e.target.value;
+        document.getElementById(`demand-simple-${id}`)?.classList.toggle("hidden", type !== "linear");
+        renderDemandParams(id, type);
+        renderMiniCurve(id);
     });
 }
 
-function renderBattlefieldWaiting() {
-    firmCard.innerHTML = `
-        <div class="firm-title">Monopolist / Factory</div>
-        <div class="firm-mode">Режим: ожидание запуска</div>
-        <div class="firm-stats">
-            <div class="mini-stat"><span class="mini-stat-label">Q</span><span class="mini-stat-value">—</span></div>
-            <div class="mini-stat"><span class="mini-stat-label">Revenue</span><span class="mini-stat-value">—</span></div>
-            <div class="mini-stat"><span class="mini-stat-label">Profit</span><span class="mini-stat-value">—</span></div>
-        </div>
-    `;
-
-    if (buyers.length === 0) {
-        buyersGrid.innerHTML = `<div class="placeholder-text">Добавь покупателей в левой панели.</div>`;
-        renderMiniMapWaiting();
-        return;
-    }
-
-    buyersGrid.innerHTML = buyers.map(buyer => {
-        const { segment, demandType } = getBuyerDisplayData(buyer.id);
-        return `
-            <div class="buyer-card segment-${segment} status-waiting">
-                <div class="buyer-header">
-                    <div class="buyer-name">Buyer #${buyer.id}</div>
-                    <div class="status-badge waiting">Ожидает</div>
-                </div>
-                <div class="buyer-meta">
-                    Segment: <strong>${segment}</strong><br>
-                    Demand: <strong>${demandType}</strong>
-                </div>
-            </div>
-        `;
-    }).join("");
-
-    renderMiniMapWaiting();
-}
-
-function addBuyer() {
+function addBuyer(data) {
     const buyer = { id: buyerCounter++ };
     buyers.push(buyer);
 
     const div = document.createElement("div");
     div.className = "buyer-form-card";
     div.id = `buyer-form-${buyer.id}`;
-    div.innerHTML = `
-        <div class="buyer-form-header">
-            <span class="buyer-form-title">Покупатель #${buyer.id}</span>
-            <button class="remove-buyer-btn" data-id="${buyer.id}">✕</button>
-        </div>
-        <div class="field"><label>Сегмент</label>
-            <select id="b${buyer.id}-segment">
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-            </select>
-        </div>
-        <div class="field"><label>Бюджет (money)</label><input type="number" id="b${buyer.id}-money" value="30" min="0" step="1"></div>
-        <div class="field"><label>target_stock</label><input type="number" id="b${buyer.id}-target_stock" value="5" min="0" step="1"></div>
-        <div class="field"><label>stock (текущий запас)</label><input type="number" id="b${buyer.id}-stock" value="0" min="0" step="1"></div>
-        <div class="field"><label>Тип спроса</label>
-            <select id="b${buyer.id}-demand_type" data-id="${buyer.id}">
-                <option value="linear">linear</option>
-                <option value="inverse_square">inverse_square</option>
-                <option value="step">step</option>
-            </select>
-        </div>
-        <div id="demand-params-${buyer.id}"></div>
-    `;
-
+    div.innerHTML = createBuyerFormHTML(buyer.id);
     buyersList.appendChild(div);
-    renderDemandParams(buyer.id, "linear");
 
-    document.getElementById(`b${buyer.id}-demand_type`).addEventListener("change", (e) => {
-        renderDemandParams(buyer.id, e.target.value);
-    });
+    if (data) {
+        document.getElementById(`b${buyer.id}-factory`).value      = data.factory      || "A";
+        document.getElementById(`b${buyer.id}-segment`).value      = data.segment      || "A";
+        document.getElementById(`b${buyer.id}-a`).value            = data.a            ?? 10;
+        document.getElementById(`b${buyer.id}-b`).value            = data.b            ?? 2;
+        document.getElementById(`b${buyer.id}-target_stock`).value = data.target_stock ?? 5;
+        document.getElementById(`b${buyer.id}-money`).value        = data.money        ?? 1000;
+        document.getElementById(`b${buyer.id}-stock`).value        = data.stock        ?? 0;
+        const dt = data.demand_type || "linear";
+        document.getElementById(`b${buyer.id}-demand_type`).value = dt;
+        if (dt !== "linear") document.getElementById(`demand-simple-${buyer.id}`)?.classList.add("hidden");
+        renderDemandParams(buyer.id, dt);
+        if (dt === "inverse_square" && data.A !== undefined) {
+            setTimeout(() => { const el = document.getElementById(`b${buyer.id}-A`); if (el) el.value = data.A; }, 0);
+        } else if (dt === "step" && data.values) {
+            setTimeout(() => { const el = document.getElementById(`b${buyer.id}-values`); if (el) el.value = data.values.join(", "); }, 0);
+        }
+    }
 
-    div.querySelector(".remove-buyer-btn").addEventListener("click", () => {
-        buyers = buyers.filter(b => b.id !== buyer.id);
-        div.remove();
-        renderBattlefieldWaiting();
-    });
-
+    attachBuyerListeners(buyer.id);
+    renderMiniCurve(buyer.id);
     renderBattlefieldWaiting();
+}
+
+function getBuyerFactory(id) {
+    return document.getElementById(`b${id}-factory`)?.value || "A";
+}
+
+function getBuyerDisplayData(id) {
+    return {
+        segment:    document.getElementById(`b${id}-segment`)?.value     || "A",
+        demandType: document.getElementById(`b${id}-demand_type`)?.value || "linear",
+        factory:    getBuyerFactory(id)
+    };
 }
 
 function collectBuyersData() {
     return buyers.map(buyer => {
-        const id = buyer.id;
-        const demandType = document.getElementById(`b${id}-demand_type`).value;
+        const id         = buyer.id;
+        const demandType = document.getElementById(`b${id}-demand_type`)?.value || "linear";
         return {
-            id: id,
-            money: parseFloat(document.getElementById(`b${id}-money`).value),
-            segment: document.getElementById(`b${id}-segment`).value,
+            id,
+            money:        parseFloat(document.getElementById(`b${id}-money`)?.value || 1000),
+            segment:      document.getElementById(`b${id}-segment`).value,
             target_stock: parseInt(document.getElementById(`b${id}-target_stock`).value),
-            stock: parseInt(document.getElementById(`b${id}-stock`).value),
-            demand_type: demandType,
-            params: getDemandParams(id, demandType)
+            stock:        parseInt(document.getElementById(`b${id}-stock`)?.value || 0),
+            demand_type:  demandType,
+            params:       getDemandParams(id, demandType)
         };
     });
 }
 
-function renderTotals(totals) {
-    const fields = [
-        { label: "Q", key: "Q" },
-        { label: "Revenue", key: "Revenue" },
-        { label: "Profit", key: "Profit" },
-        { label: "CS", key: "CS" },
-        { label: "PS", key: "PS" },
-        { label: "W", key: "W" }
-    ];
-    totalsGrid.innerHTML = fields.map(f => `
-        <div class="total-card">
-            <span class="total-card-label">${f.label}</span>
-            <span class="total-card-value">${formatNumber(totals[f.key])}</span>
-        </div>
-    `).join("");
+
+function showScenarioConfirmModal(key) {
+    const existing = document.getElementById("scenario-confirm-modal");
+    if (existing) existing.remove();
+
+    const modal = document.createElement("div");
+    modal.id = "scenario-confirm-modal";
+    modal.className = "confirm-modal-overlay";
+    modal.innerHTML = `
+        <div class="confirm-modal">
+            <div class="confirm-title">Загрузить сценарий?</div>
+            <p class="confirm-body">Все текущие покупатели и параметры будут заменены на «${SCENARIOS[key]?.name}».</p>
+            <label class="confirm-skip-label">
+                <input type="checkbox" id="confirm-skip-cb">
+                Больше не спрашивать
+            </label>
+            <div class="confirm-btns">
+                <button class="confirm-btn-ok">Загрузить</button>
+                <button class="confirm-btn-cancel">Отмена</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    modal.querySelector(".confirm-btn-ok").addEventListener("click", () => {
+        if (modal.querySelector("#confirm-skip-cb").checked) {
+            localStorage.setItem("mss_skip_scenario_confirm", "true");
+        }
+        modal.remove();
+        doLoadScenario(key);
+    });
+    modal.querySelector(".confirm-btn-cancel").addEventListener("click", () => modal.remove());
+    modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
 }
 
-function renderCharts(data) {
-    const t = data.totals;
-    const results = data.buyers_results;
+function loadScenario(key) {
+    const skipConfirm = localStorage.getItem("mss_skip_scenario_confirm") === "true";
+    if (!skipConfirm && buyers.length > 0) {
+        showScenarioConfirmModal(key);
+        return;
+    }
+    doLoadScenario(key);
+}
 
-    chartsContainer.innerHTML = `
-        <div class="chart-wrap">
-            <div class="chart-title">Распределение благосостояния</div>
-            <canvas id="welfare-canvas"></canvas>
-        </div>
-        <div class="chart-wrap">
-            <div class="chart-title">Результаты по покупателям</div>
-            <canvas id="buyers-canvas"></canvas>
-        </div>
-    `;
+function doLoadScenario(key) {
+    const s = SCENARIOS[key];
+    if (!s) return;
 
-    if (welfareChart) { welfareChart.destroy(); welfareChart = null; }
-    if (buyersChart) { buyersChart.destroy(); buyersChart = null; }
+    buyers = [];
+    buyerCounter = 1;
+    Object.keys(buyerPositions).forEach(k => delete buyerPositions[k]);
+    buyersList.innerHTML = "";
 
-    const welfareCtx = document.getElementById("welfare-canvas").getContext("2d");
-    welfareChart = new Chart(welfareCtx, {
-        type: "bar",
-        data: {
-            labels: ["CS", "PS (Profit)", "W (Total)"],
-            datasets: [{
-                data: [t.CS, t.PS, t.W],
-                backgroundColor: ["#86efac", "#93c5fd", "#c4b5fd"],
-                borderColor: ["#22c55e", "#3b82f6", "#8b5cf6"],
-                borderWidth: 1.5,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } } }
+    document.getElementById("pricing-mode-a").value = s.firmA.mode;
+    document.getElementById("mc-a").value            = s.firmA.mc;
+    document.getElementById("capacity-a").value      = s.firmA.capacity;
+    renderPricingParams(s.firmA.mode, "a");
+    setFirmParams(s.firmA, "a");
+
+    document.getElementById("pricing-mode-b").value = s.firmB.mode;
+    document.getElementById("mc-b").value            = s.firmB.mc;
+    document.getElementById("capacity-b").value      = s.firmB.capacity;
+    renderPricingParams(s.firmB.mode, "b");
+    setFirmParams(s.firmB, "b");
+
+    s.buyers.forEach(data => addBuyer(data));
+
+    document.getElementById("totals-content").innerHTML = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть итоги.</div>`;
+    chartsContainer.innerHTML      = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть графики.</div>`;
+    buyersTableContainer.innerHTML = `<div class="placeholder-text">Запусти симуляцию, чтобы увидеть таблицу.</div>`;
+    resultBox.textContent = "Отчёт появится после запуска симуляции.";
+    downloadBtn.disabled  = true;
+    lastReportText        = "";
+    hasRunOnce            = false;
+    runBtn.classList.remove("run-btn--dirty");
+    runBtn.textContent = "Запустить симуляцию";
+    saveSnapshotBtn.disabled = true;
+
+    const descEl = document.getElementById("scenario-description");
+    descEl.innerHTML = `${s.description} <button class="scenario-close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+    descEl.classList.remove("hidden");
+
+    renderBattlefieldWaiting();
+    saveState();
+}
+
+
+function toggleAdvancedMode(show) {
+    buyersList.classList.toggle("show-advanced", show);
+    if (!show) {
+        buyers.forEach(b => {
+            const dtEl = document.getElementById(`b${b.id}-demand_type`);
+            if (dtEl && dtEl.value !== "linear") {
+                dtEl.value = "linear";
+                document.getElementById(`demand-simple-${b.id}`)?.classList.remove("hidden");
+                renderDemandParams(b.id, "linear");
+                renderMiniCurve(b.id);
+            }
+        });
+    }
+}
+
+
+function getRandomMapPos() {
+    return { x: 18 + Math.random() * 64, y: 8 + Math.random() * 52 };
+}
+
+function ensureBuyerPositions() {
+    buyers.forEach(b => { if (!buyerPositions[b.id]) buyerPositions[b.id] = getRandomMapPos(); });
+    Object.keys(buyerPositions).forEach(id => { if (!buyers.find(b => b.id === parseInt(id))) delete buyerPositions[id]; });
+}
+
+function renderMiniMapWaiting() {
+    const mapEl = document.getElementById("mini-map");
+    if (!mapEl) return;
+    ensureBuyerPositions();
+    const figures = buyers.map(buyer => {
+        const pos = buyerPositions[buyer.id];
+        const fac = getBuyerFactory(buyer.id);
+        return `<div class="map-figure" id="map-fig-${buyer.id}" style="left:${pos.x}%;top:${pos.y}%">🧍<span class="map-figure-label">#${buyer.id}(${fac})</span></div>`;
+    }).join("");
+    mapEl.innerHTML = `
+        <div class="map-firm-a">🏭<span class="map-firm-lbl">A</span></div>
+        <div class="map-firm-b">🏭<span class="map-firm-lbl">B</span></div>
+        ${figures}`;
+}
+
+function animateMiniMap(allResults) {
+    allResults.forEach((b, i) => {
+        const fig = document.getElementById(`map-fig-${b.id}`);
+        if (!fig) return;
+        if (b.q > 0) {
+            setTimeout(() => {
+                fig.innerHTML = `🚶<span class="map-figure-label">#${b.id}(${b.factory})</span>`;
+                fig.style.left = b.factory === "A" ? "13%" : "87%";
+                fig.style.top  = "82%";
+            }, i * 180 + 80);
+        } else {
+            setTimeout(() => { fig.innerHTML = `🚫<span class="map-figure-label">#${b.id}</span>`; }, i * 180 + 80);
         }
     });
+}
 
-    const buyerLabels = results.map(b => `Buyer #${b.id}`);
-    const buyersCtx = document.getElementById("buyers-canvas").getContext("2d");
-    buyersChart = new Chart(buyersCtx, {
+
+function makeFirmCard(label, mode, totals, colorClass) {
+    const stats = totals
+        ? `<div class="firm-stats">
+               <div class="mini-stat"><span class="mini-stat-label">Q</span><span class="mini-stat-value">${formatNumber(totals.Q)}</span></div>
+               <div class="mini-stat"><span class="mini-stat-label">Revenue</span><span class="mini-stat-value">${formatNumber(totals.Revenue)}</span></div>
+               <div class="mini-stat"><span class="mini-stat-label">Profit</span><span class="mini-stat-value">${formatNumber(totals.Profit)}</span></div>
+           </div>`
+        : `<div class="firm-no-buyers">нет покупателей</div>`;
+    return `<div class="firm-card ${colorClass}">
+        <div class="firm-title">${label}</div>
+        <div class="firm-mode">${MODE_NAMES[mode] || mode}</div>
+        ${stats}
+    </div>`;
+}
+
+function renderBattlefieldWaiting() {
+    const battlefield = document.getElementById("battlefield");
+    if (!battlefield) return;
+    const modeA = document.getElementById("pricing-mode-a")?.value || "uniform";
+    const modeB = document.getElementById("pricing-mode-b")?.value || "uniform";
+    const buyerCards = buyers.length === 0
+        ? `<div class="placeholder-text">Добавь покупателей в левой панели.</div>`
+        : buyers.map(buyer => {
+            const { segment, demandType, factory } = getBuyerDisplayData(buyer.id);
+            return `<div class="buyer-card segment-${segment} status-waiting">
+                <div class="buyer-header">
+                    <div class="buyer-name">Buyer #${buyer.id} <span class="factory-badge factory-badge-${factory}">${factory}</span></div>
+                    <div class="status-badge waiting">Ожидает</div>
+                </div>
+                <div class="buyer-meta">Сегмент: <strong>${segment}</strong> | Спрос: <strong>${demandType}</strong></div>
+            </div>`;
+        }).join("");
+    battlefield.innerHTML = `
+        ${makeFirmCard("Factory A", modeA, null, "firm-card-a")}
+        <div class="buyers-zone">
+            <div class="buyers-zone-title">Покупатели</div>
+            <div class="buyers-grid">${buyerCards}</div>
+        </div>
+        ${makeFirmCard("Factory B", modeB, null, "firm-card-b")}`;
+    renderMiniMapWaiting();
+}
+
+function renderBattlefieldResult(dataA, dataB, modeA, modeB) {
+    const battlefield = document.getElementById("battlefield");
+    if (!battlefield) return;
+    const allResults = [
+        ...(dataA?.buyers_results || []).map(b => ({ ...b, factory: "A" })),
+        ...(dataB?.buyers_results || []).map(b => ({ ...b, factory: "B" }))
+    ];
+    const buyerCards = allResults.map((buyer, index) => {
+        const bought = buyer.q > 0;
+        const cls    = bought ? "bought" : "skipped";
+        const delay  = index * 120;
+        return `<div class="buyer-card segment-${buyer.segment} status-${cls} card-animate" style="animation-delay:${delay}ms">
+            <div class="buyer-header">
+                <div class="buyer-name">Buyer #${buyer.id} <span class="factory-badge factory-badge-${buyer.factory}">${buyer.factory}</span></div>
+                <div class="status-badge ${cls}">${bought ? "Купил" : "Не купил"}</div>
+            </div>
+            <div class="buyer-meta">Сегмент: <strong>${buyer.segment}</strong> | Спрос: <strong>${buyer.demand_type}</strong></div>
+            <div class="buyer-stats">
+                <div class="buyer-stat"><span class="buyer-stat-label">Gap</span><span class="buyer-stat-value">${formatNumber(buyer.gap)}</span></div>
+                <div class="buyer-stat"><span class="buyer-stat-label">q*</span><span class="buyer-stat-value">${formatNumber(buyer.q)}</span></div>
+                <div class="buyer-stat"><span class="buyer-stat-label">Payment</span><span class="buyer-stat-value">${formatNumber(buyer.payment)}</span></div>
+                <div class="buyer-stat"><span class="buyer-stat-label">CS</span><span class="buyer-stat-value">${formatNumber(buyer.consumer_surplus)}</span></div>
+            </div>
+            ${bought ? `<div class="payment-arrow" style="animation-delay:${delay + 200}ms">← Завод ${buyer.factory}</div>` : ""}
+        </div>`;
+    }).join("");
+    battlefield.innerHTML = `
+        ${makeFirmCard("Factory A", modeA, dataA?.totals || null, "firm-card-a")}
+        <div class="buyers-zone">
+            <div class="buyers-zone-title">Покупатели</div>
+            <div class="buyers-grid">${buyerCards || '<div class="placeholder-text">Нет данных.</div>'}</div>
+        </div>
+        ${makeFirmCard("Factory B", modeB, dataB?.totals || null, "firm-card-b")}`;
+}
+
+
+function combineTotals(tA, tB) {
+    const a = tA || { Q:0, Revenue:0, VarCost:0, Profit:0, CS:0, PS:0, W:0, W_eff:0, DWL:0 };
+    const b = tB || { Q:0, Revenue:0, VarCost:0, Profit:0, CS:0, PS:0, W:0, W_eff:0, DWL:0 };
+    return {
+        Q: a.Q+b.Q, Revenue: a.Revenue+b.Revenue, VarCost: a.VarCost+b.VarCost,
+        Profit: a.Profit+b.Profit, CS: a.CS+b.CS, PS: a.PS+b.PS,
+        W: a.W+b.W, W_eff: a.W_eff+b.W_eff, DWL: a.DWL+b.DWL
+    };
+}
+
+function makeTotalsGridHTML(totals) {
+    if (!totals) return `<div class="placeholder-text">Нет покупателей.</div>`;
+    const fields = [
+        { label: "Q",       key: "Q" },
+        { label: "Revenue", key: "Revenue" },
+        { label: "Profit",  key: "Profit" },
+        { label: "CS",      key: "CS" },
+        { label: "PS",      key: "PS" },
+        { label: "W",       key: "W" },
+        { label: "W_eff",   key: "W_eff", hint: "эфф." },
+        { label: "DWL",     key: "DWL",   loss: true }
+    ];
+    return fields.map(f => `
+        <div class="total-card${f.loss ? " total-card--loss" : ""}" data-tooltip="${METRIC_TOOLTIPS[f.key] || ""}">
+            <span class="total-card-label">${f.label}${f.hint ? `<span class="total-card-hint">${f.hint}</span>` : ""}</span>
+            <span class="total-card-value">${formatNumber(totals[f.key])}</span>
+        </div>`).join("");
+}
+
+function renderTotals(totalsA, totalsB) {
+    const combined = combineTotals(totalsA, totalsB);
+    document.getElementById("totals-content").innerHTML = `
+        <div class="two-firm-totals">
+            <div class="firm-totals-block">
+                <h3 class="firm-totals-title firm-totals-title-a">Фирма A</h3>
+                <div class="totals-grid">${makeTotalsGridHTML(totalsA)}</div>
+            </div>
+            <div class="firm-totals-block">
+                <h3 class="firm-totals-title firm-totals-title-b">Фирма B</h3>
+                <div class="totals-grid">${makeTotalsGridHTML(totalsB)}</div>
+            </div>
+        </div>
+        <div class="combined-totals-block">
+            <h3 class="firm-totals-title">Суммарно (A + B)</h3>
+            <div class="totals-grid">${makeTotalsGridHTML(combined)}</div>
+        </div>`;
+}
+
+
+function saveSnapshot() {
+    if (!lastDataA && !lastDataB) return;
+    if (snapshots.length >= 5) snapshots.shift();
+    snapshotCounter++;
+    const now  = new Date();
+    const time = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+    snapshots.push({
+        id: Date.now(),
+        n: snapshotCounter,
+        time,
+        modeA: lastModeA,
+        modeB: lastModeB,
+        totalsA: lastDataA?.totals || null,
+        totalsB: lastDataB?.totals || null,
+        combined: combineTotals(lastDataA?.totals, lastDataB?.totals)
+    });
+    renderSnapshots();
+}
+
+function deleteSnapshot(id) {
+    snapshots = snapshots.filter(s => s.id !== id);
+    renderSnapshots();
+}
+
+function clearSnapshots() {
+    snapshots = [];
+    renderSnapshots();
+}
+
+function renderSnapshots() {
+    const badge   = document.getElementById("snap-count-badge");
+    const clearBtn = snapClearBtn;
+
+    if (snapshots.length === 0) {
+        badge.textContent = "";
+        clearBtn.style.display = "none";
+        snapshotsContainer.innerHTML = `<div class="placeholder-text">Нажми «📷 Снапшот» в блоке Итогов после запуска.</div>`;
+        if (snapChart) { snapChart.destroy(); snapChart = null; }
+        return;
+    }
+
+    badge.textContent = snapshots.length;
+    clearBtn.style.display = "";
+
+    // Find best values across all snapshots
+    const bestProfit = Math.max(...snapshots.map(s => s.combined?.Profit ?? -Infinity));
+    const bestCS     = Math.max(...snapshots.map(s => s.combined?.CS     ?? -Infinity));
+    const bestW      = Math.max(...snapshots.map(s => s.combined?.W      ?? -Infinity));
+    const bestDWL    = Math.min(...snapshots.map(s => s.combined?.DWL    ??  Infinity));
+
+    const cards = snapshots.map((snap, i) => {
+        const prev = i > 0 ? snapshots[i - 1].combined : null;
+        const c    = snap.combined;
+
+        function deltaHTML(key, lowerIsBetter = false) {
+            if (!prev || prev[key] == null || c[key] == null) return "";
+            const diff = c[key] - prev[key];
+            if (Math.abs(diff) < 0.001) return "";
+            const up = lowerIsBetter ? diff < 0 : diff > 0;
+            const cls = up ? "snap-delta--up" : "snap-delta--down";
+            const sign = diff > 0 ? "+" : "";
+            return `<span class="snap-delta ${cls}">${sign}${formatNumber(diff)}</span>`;
+        }
+
+        function cellClass(key, lowerIsBetter = false) {
+            if (c == null) return "";
+            if (lowerIsBetter) return Math.abs(c[key] - bestDWL) < 0.001 ? " snap-cell--best-loss" : "";
+            const best = key === "Profit" ? bestProfit : key === "CS" ? bestCS : bestW;
+            return Math.abs(c[key] - best) < 0.001 ? " snap-cell--best" : "";
+        }
+
+        const modesHTML = snap.modeA === snap.modeB
+            ? `<span class="snap-mode snap-mode-a">${MODE_SHORT[snap.modeA]}</span>`
+            : `<span class="snap-mode snap-mode-a">A: ${MODE_SHORT[snap.modeA]}</span>
+               <span class="snap-vs">vs</span>
+               <span class="snap-mode snap-mode-b">B: ${MODE_SHORT[snap.modeB]}</span>`;
+
+        return `<div class="snapshot-card">
+            <div class="snap-card-header">
+                <div>
+                    <div class="snap-card-title">#${snap.n} · ${snap.time}</div>
+                </div>
+                <button class="snap-delete-btn" data-snap-id="${snap.id}" title="Удалить">✕</button>
+            </div>
+            <div class="snap-modes">${modesHTML}</div>
+            <div class="snap-metrics-grid">
+                <div class="snap-cell${cellClass("Profit")}">
+                    <span class="snap-cell-label">Profit</span>
+                    <span class="snap-cell-value">${formatNumber(c?.Profit)}</span>
+                    ${deltaHTML("Profit")}
+                </div>
+                <div class="snap-cell${cellClass("CS")}">
+                    <span class="snap-cell-label">CS</span>
+                    <span class="snap-cell-value">${formatNumber(c?.CS)}</span>
+                    ${deltaHTML("CS")}
+                </div>
+                <div class="snap-cell${cellClass("W")}">
+                    <span class="snap-cell-label">W</span>
+                    <span class="snap-cell-value">${formatNumber(c?.W)}</span>
+                    ${deltaHTML("W")}
+                </div>
+                <div class="snap-cell${cellClass("DWL", true)}">
+                    <span class="snap-cell-label">DWL</span>
+                    <span class="snap-cell-value">${formatNumber(c?.DWL)}</span>
+                    ${deltaHTML("DWL", true)}
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+
+    const chartHTML = snapshots.length >= 2
+        ? `<div class="snap-chart-block"><canvas id="snap-chart-canvas"></canvas></div>`
+        : "";
+
+    snapshotsContainer.innerHTML = `<div class="snapshots-list">${cards}</div>${chartHTML}`;
+
+    snapshotsContainer.querySelectorAll(".snap-delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => deleteSnapshot(Number(btn.dataset.snapId)));
+    });
+
+    if (snapshots.length >= 2) {
+        renderSnapshotChart();
+    }
+}
+
+function renderSnapshotChart() {
+    const canvas = document.getElementById("snap-chart-canvas");
+    if (!canvas) return;
+    if (snapChart) { snapChart.destroy(); snapChart = null; }
+
+    const labels  = snapshots.map(s => `#${s.n}`);
+    snapChart = new Chart(canvas.getContext("2d"), {
         type: "bar",
         data: {
-            labels: buyerLabels,
+            labels,
             datasets: [
-                {
-                    label: "Value",
-                    data: results.map(b => b.value),
-                    backgroundColor: "#86efac",
-                    borderColor: "#22c55e",
-                    borderWidth: 1.5,
-                    borderRadius: 4
-                },
-                {
-                    label: "Payment",
-                    data: results.map(b => b.payment),
-                    backgroundColor: "#93c5fd",
-                    borderColor: "#3b82f6",
-                    borderWidth: 1.5,
-                    borderRadius: 4
-                },
-                {
-                    label: "CS",
-                    data: results.map(b => b.consumer_surplus),
-                    backgroundColor: "#fde68a",
-                    borderColor: "#f59e0b",
-                    borderWidth: 1.5,
-                    borderRadius: 4
-                }
+                { label: "Profit", data: snapshots.map(s => s.combined?.Profit ?? 0), backgroundColor: "#93c5fd", borderColor: "#3b82f6", borderWidth: 1.5, borderRadius: 4 },
+                { label: "CS",     data: snapshots.map(s => s.combined?.CS     ?? 0), backgroundColor: "#86efac", borderColor: "#22c55e", borderWidth: 1.5, borderRadius: 4 },
+                { label: "W",      data: snapshots.map(s => s.combined?.W      ?? 0), backgroundColor: "#c4b5fd", borderColor: "#8b5cf6", borderWidth: 1.5, borderRadius: 4 },
+                { label: "DWL",    data: snapshots.map(s => s.combined?.DWL    ?? 0), backgroundColor: "#fca5a5", borderColor: "#ef4444", borderWidth: 1.5, borderRadius: 4 }
             ]
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: "top", labels: { font: { size: 12 } } } },
-            scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } } }
+            plugins: { legend: { position: "top" } },
+            scales: { y: { beginAtZero: true } }
         }
     });
 }
 
-function renderBuyersTable(buyersResults) {
-    if (!buyersResults.length) {
-        buyersTableContainer.innerHTML = `<div class="placeholder-text">Нет данных.</div>`;
-        return;
+
+function renderCharts(dataA, dataB) {
+    chartsContainer.innerHTML = `
+        <div class="chart-wrap"><div class="chart-title">Благосостояние: Фирма A vs Фирма B</div><canvas id="welfare-canvas"></canvas></div>
+        <div class="chart-wrap"><div class="chart-title">Результаты по покупателям</div><canvas id="buyers-canvas"></canvas></div>`;
+    if (welfareChart) { welfareChart.destroy(); welfareChart = null; }
+    if (buyersChart)  { buyersChart.destroy();  buyersChart  = null; }
+    const tA = dataA?.totals, tB = dataB?.totals;
+    welfareChart = new Chart(document.getElementById("welfare-canvas").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: ["CS", "PS", "W", "DWL"],
+            datasets: [
+                { label: "Фирма A", data: [tA?.CS||0, tA?.PS||0, tA?.W||0, tA?.DWL||0], backgroundColor: "#93c5fd", borderColor: "#3b82f6", borderWidth: 1.5, borderRadius: 4 },
+                { label: "Фирма B", data: [tB?.CS||0, tB?.PS||0, tB?.W||0, tB?.DWL||0], backgroundColor: "#c4b5fd", borderColor: "#8b5cf6", borderWidth: 1.5, borderRadius: 4 }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: "top" } }, scales: { y: { beginAtZero: true } } }
+    });
+    const allResults = [
+        ...(dataA?.buyers_results || []).map(b => ({ ...b, factory: "A" })),
+        ...(dataB?.buyers_results || []).map(b => ({ ...b, factory: "B" }))
+    ];
+    if (allResults.length > 0) {
+        buyersChart = new Chart(document.getElementById("buyers-canvas").getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: allResults.map(b => `#${b.id}(${b.factory})`),
+                datasets: [
+                    { label: "Value",   data: allResults.map(b => b.value),            backgroundColor: "#86efac", borderColor: "#22c55e", borderWidth: 1.5, borderRadius: 4 },
+                    { label: "Payment", data: allResults.map(b => b.payment),          backgroundColor: "#93c5fd", borderColor: "#3b82f6", borderWidth: 1.5, borderRadius: 4 },
+                    { label: "CS",      data: allResults.map(b => b.consumer_surplus), backgroundColor: "#fde68a", borderColor: "#f59e0b", borderWidth: 1.5, borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: "top" } }, scales: { y: { beginAtZero: true } } }
+        });
     }
-    const rows = buyersResults.map(b => `
-        <tr>
-            <td>${b.id}</td>
-            <td>${b.segment}</td>
-            <td>${b.demand_type}</td>
-            <td>${formatNumber(b.gap)}</td>
-            <td>${formatNumber(b.q)}</td>
-            <td>${formatNumber(b.payment)}</td>
-            <td>${formatNumber(b.utility)}</td>
-            <td>${formatNumber(b.consumer_surplus)}</td>
-        </tr>
-    `).join("");
+}
+
+
+function renderBuyersTable(resultsA, resultsB) {
+    const all = [...resultsA.map(b => ({...b, factory:"A"})), ...resultsB.map(b => ({...b, factory:"B"}))];
+    if (!all.length) { buyersTableContainer.innerHTML = `<div class="placeholder-text">Нет данных.</div>`; return; }
     buyersTableContainer.innerHTML = `
         <table class="buyers-table">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Сегмент</th><th>Тип спроса</th><th>Gap</th>
-                    <th>q*</th><th>Payment</th><th>Utility</th><th>CS</th>
-                </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-        </table>
-    `;
+            <thead><tr><th>ID</th><th>Завод</th><th>Сег.</th><th>Спрос</th><th>Gap</th><th>q*</th><th>Payment</th><th>Utility</th><th>CS</th></tr></thead>
+            <tbody>${all.map(b => `<tr>
+                <td>${b.id}</td>
+                <td><span class="factory-badge factory-badge-${b.factory}">${b.factory}</span></td>
+                <td>${b.segment}</td><td>${b.demand_type}</td>
+                <td>${formatNumber(b.gap)}</td><td>${formatNumber(b.q)}</td>
+                <td>${formatNumber(b.payment)}</td><td>${formatNumber(b.utility)}</td>
+                <td>${formatNumber(b.consumer_surplus)}</td>
+            </tr>`).join("")}</tbody>
+        </table>`;
 }
+
 
 function showError(msg) {
     resultBox.classList.remove("hidden");
@@ -367,141 +965,176 @@ function showError(msg) {
     toggleReportBtn.textContent = "▼ Скрыть текстовый отчёт";
 }
 
-async function runSimulation() {
-    if (buyers.length === 0) {
-        showError("Добавь хотя бы одного покупателя.");
-        return;
+async function postSimulate(payload) {
+    const response = await fetch(`${BACKEND_BASE_URL}/simulate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const err = await response.json();
+        throw new Error(JSON.stringify(err.detail, null, 2));
     }
+    return response.json();
+}
 
-    const mode = pricingModeSelect.value;
-    const capacityVal = document.getElementById("capacity").value;
+async function runSimulation() {
+    if (buyers.length === 0) { showError("Добавь хотя бы одного покупателя."); return; }
 
-    const payload = {
-        pricing_mode: mode,
-        pricing_params: getPricingParams(mode),
-        buyers: collectBuyersData(),
-        mc: parseFloat(document.getElementById("mc").value),
-        capacity_per_day: capacityVal ? parseInt(capacityVal) : null
-    };
+    runBtn.disabled = true;
+    runBtn.textContent = "Считаю...";
+    runBtn.classList.remove("run-btn--dirty");
+
+    const all   = collectBuyersData();
+    const modeA = document.getElementById("pricing-mode-a").value;
+    const modeB = document.getElementById("pricing-mode-b").value;
+    const mcA   = parseFloat(document.getElementById("mc-a").value);
+    const mcB   = parseFloat(document.getElementById("mc-b").value);
+    const capA  = document.getElementById("capacity-a").value;
+    const capB  = document.getElementById("capacity-b").value;
+    const buyersA = all.filter(b => getBuyerFactory(b.id) === "A");
+    const buyersB = all.filter(b => getBuyerFactory(b.id) === "B");
 
     try {
-        const response = await fetch(`${BACKEND_BASE_URL}/simulate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        const [dataA, dataB] = await Promise.all([
+            buyersA.length > 0 ? postSimulate({ pricing_mode: modeA, pricing_params: getPricingParams(modeA, "a"), buyers: buyersA, mc: mcA, capacity_per_day: capA ? parseInt(capA) : null }) : Promise.resolve(null),
+            buyersB.length > 0 ? postSimulate({ pricing_mode: modeB, pricing_params: getPricingParams(modeB, "b"), buyers: buyersB, mc: mcB, capacity_per_day: capB ? parseInt(capB) : null }) : Promise.resolve(null)
+        ]);
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(JSON.stringify(err.detail, null, 2));
-        }
+        renderBattlefieldResult(dataA, dataB, modeA, modeB);
+        renderTotals(dataA?.totals, dataB?.totals);
+        renderCharts(dataA, dataB);
+        renderBuyersTable(dataA?.buyers_results || [], dataB?.buyers_results || []);
 
-        const data = await response.json();
-        const reportText = buildSimulationReport(data);
-
-        resultBox.textContent = reportText;
-        lastReportText = reportText;
+        const report = buildReport(dataA, dataB, modeA, modeB);
+        resultBox.textContent = report;
+        lastReportText = report;
         downloadBtn.disabled = false;
+        setClean();
 
-        renderTotals(data.totals);
-        renderCharts(data);
-        renderBuyersTable(data.buyers_results);
-        renderBattlefield(mode, data);
+        lastDataA = dataA;
+        lastDataB = dataB;
+        lastModeA = modeA;
+        lastModeB = modeB;
+        saveSnapshotBtn.disabled = false;
+
         renderMiniMapWaiting();
-        setTimeout(() => animateMiniMap(data.buyers_results), 150);
+        const allResults = [
+            ...(dataA?.buyers_results || []).map(b => ({ ...b, factory: "A" })),
+            ...(dataB?.buyers_results || []).map(b => ({ ...b, factory: "B" }))
+        ];
+        setTimeout(() => animateMiniMap(allResults), 150);
     } catch (error) {
         showError(`Ошибка:\n${error.message}`);
+        runBtn.textContent = "Запустить симуляцию";
+    } finally {
+        runBtn.disabled = false;
     }
 }
 
-function formatNumber(value) {
-    if (typeof value !== "number") return value;
-    if (Number.isInteger(value)) return value.toString();
-    return value.toFixed(2);
-}
 
-const MODE_NAMES = {
-    uniform: "Uniform pricing",
-    pd1: "PD1 — первая степень",
-    pd2: "PD2 — двухчастный тариф",
-    pd3: "PD3 — третья степень"
-};
-
-function renderBattlefield(mode, data) {
-    if (!data.buyers_results || !data.totals) return;
-    const t = data.totals;
-
-    firmCard.innerHTML = `
-        <div class="firm-title">Monopolist / Factory</div>
-        <div class="firm-mode">Режим: ${MODE_NAMES[mode] || mode}</div>
-        <div class="firm-stats">
-            <div class="mini-stat"><span class="mini-stat-label">Q</span><span class="mini-stat-value">${formatNumber(t.Q)}</span></div>
-            <div class="mini-stat"><span class="mini-stat-label">Revenue</span><span class="mini-stat-value">${formatNumber(t.Revenue)}</span></div>
-            <div class="mini-stat"><span class="mini-stat-label">Profit</span><span class="mini-stat-value">${formatNumber(t.Profit)}</span></div>
-        </div>
-    `;
-
-    buyersGrid.innerHTML = data.buyers_results.map((buyer, index) => {
-        const bought = buyer.q > 0;
-        const statusClass = bought ? "bought" : "skipped";
-        const statusLabel = bought ? "Купил" : "Не купил";
-        const delay = index * 120;
-        return `
-            <div class="buyer-card segment-${buyer.segment} status-${statusClass} card-animate" style="animation-delay: ${delay}ms">
-                <div class="buyer-header">
-                    <div class="buyer-name">Buyer #${buyer.id}</div>
-                    <div class="status-badge ${statusClass}">${statusLabel}</div>
-                </div>
-                <div class="buyer-meta">
-                    Segment: <strong>${buyer.segment}</strong><br>
-                    Demand: <strong>${buyer.demand_type}</strong>
-                </div>
-                <div class="buyer-stats">
-                    <div class="buyer-stat"><span class="buyer-stat-label">Gap</span><span class="buyer-stat-value">${formatNumber(buyer.gap)}</span></div>
-                    <div class="buyer-stat"><span class="buyer-stat-label">Bought</span><span class="buyer-stat-value">${formatNumber(buyer.q)}</span></div>
-                    <div class="buyer-stat"><span class="buyer-stat-label">Payment</span><span class="buyer-stat-value">${formatNumber(buyer.payment)}</span></div>
-                    <div class="buyer-stat"><span class="buyer-stat-label">CS</span><span class="buyer-stat-value">${formatNumber(buyer.consumer_surplus)}</span></div>
-                </div>
-                ${bought ? `<div class="payment-arrow" style="animation-delay: ${delay + 200}ms">← оплата отправлена</div>` : ""}
-            </div>
-        `;
-    }).join("");
-}
-
-function buildSimulationReport(data) {
-    let text = "ОТЧЁТ ПО СИМУЛЯЦИИ РЫНКА\n=======================\n\n";
-    text += "РЕЗУЛЬТАТЫ ПО ПОКУПАТЕЛЯМ\n-------------------------\n\n";
-    data.buyers_results.forEach((buyer, index) => {
-        text += `Покупатель #${index + 1}\n`;
-        text += `ID: ${buyer.id} | Сегмент: ${buyer.segment} | Спрос: ${buyer.demand_type}\n`;
-        text += `Gap: ${formatNumber(buyer.gap)} | q*: ${formatNumber(buyer.q)}\n`;
-        text += `V(q*): ${formatNumber(buyer.value)} | T(q*): ${formatNumber(buyer.payment)}\n`;
-        text += `U(q*): ${formatNumber(buyer.utility)} | CS: ${formatNumber(buyer.consumer_surplus)}\n`;
-        text += buyer.q === 0 ? "→ Отказался от покупки\n\n" : "→ Купил оптимальный объём\n\n";
-    });
-    const t = data.totals;
-    text += "ИТОГИ ПО ФИРМЕ\n--------------\n";
-    text += `Q: ${formatNumber(t.Q)}\n`;
-    text += `Revenue: ${formatNumber(t.Revenue)}\n`;
-    text += `VarCost: ${formatNumber(t.VarCost)}\n`;
-    text += `Profit: ${formatNumber(t.Profit)}\n`;
-    text += `CS: ${formatNumber(t.CS)}\n`;
-    text += `PS: ${formatNumber(t.PS)}\n`;
-    text += `W: ${formatNumber(t.W)}\n`;
+function buildReport(dataA, dataB, modeA, modeB) {
+    const totalsStr = t => !t ? "" :
+        `Q: ${formatNumber(t.Q)} | Revenue: ${formatNumber(t.Revenue)} | Profit: ${formatNumber(t.Profit)}\n` +
+        `CS: ${formatNumber(t.CS)} | PS: ${formatNumber(t.PS)} | W: ${formatNumber(t.W)} | W_eff: ${formatNumber(t.W_eff)} | DWL: ${formatNumber(t.DWL)}\n`;
+    const buyersStr = results => (results || []).map((b, i) =>
+        `  #${i+1} (ID ${b.id}) | ${b.segment} | ${b.demand_type} | Gap=${formatNumber(b.gap)} q*=${formatNumber(b.q)} T=${formatNumber(b.payment)} CS=${formatNumber(b.consumer_surplus)}\n`
+    ).join("");
+    let text = "ОТЧЁТ ПО СИМУЛЯЦИИ\n==================\n\n";
+    if (dataA) text += `ФИРМА A — ${MODE_NAMES[modeA]}\n${"─".repeat(36)}\n${buyersStr(dataA.buyers_results)}\n${totalsStr(dataA.totals)}\n`;
+    if (dataB) text += `ФИРМА B — ${MODE_NAMES[modeB]}\n${"─".repeat(36)}\n${buyersStr(dataB.buyers_results)}\n${totalsStr(dataB.totals)}\n`;
+    if (dataA && dataB) text += `СУММАРНО\n${"─".repeat(36)}\n${totalsStr(combineTotals(dataA.totals, dataB.totals))}`;
     return text;
 }
 
 function downloadReport() {
     if (!lastReportText) return;
     const blob = new Blob([lastReportText], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "simulation_report.txt";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "simulation_report.txt";
+    document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
+}
+
+
+function getCompareParams() {
+    return {
+        uniform_params: { p: parseFloat(document.getElementById("cmp-uniform-p").value) },
+        pd2_params: { F: parseFloat(document.getElementById("cmp-pd2-F").value), p: parseFloat(document.getElementById("cmp-pd2-p").value) },
+        pd3_params: { segment_prices: { A: parseFloat(document.getElementById("cmp-pd3-pA").value), B: parseFloat(document.getElementById("cmp-pd3-pB").value), C: parseFloat(document.getElementById("cmp-pd3-pC").value) } }
+    };
+}
+
+async function runComparison() {
+    if (buyers.length === 0) { document.getElementById("compare-results").innerHTML = `<div class="placeholder-text">Сначала добавь покупателей.</div>`; return; }
+    compareBtn.disabled = true; compareBtn.textContent = "Считаю...";
+    try {
+        const response = await fetch(`${BACKEND_BASE_URL}/compare`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ buyers: collectBuyersData(), mc: parseFloat(document.getElementById("mc-a").value), capacity_per_day: parseInt(document.getElementById("capacity-a").value) || null, ...getCompareParams() })
+        });
+        if (!response.ok) { const err = await response.json(); throw new Error(JSON.stringify(err.detail)); }
+        renderCompareResults(await response.json());
+    } catch (e) {
+        document.getElementById("compare-results").innerHTML = `<div class="placeholder-text" style="color:#dc2626">Ошибка: ${e.message}</div>`;
+    } finally {
+        compareBtn.disabled = false; compareBtn.textContent = "Сравнить все режимы";
+    }
+}
+
+function renderCompareResults(results) {
+    const modes   = ["uniform", "pd1", "pd2", "pd3"];
+    const labels  = { uniform: "Uniform", pd1: "PD1", pd2: "PD2", pd3: "PD3" };
+    const metrics = [
+        { key: "Q", label: "Q", better: "max" }, { key: "Revenue", label: "Revenue", better: "max" },
+        { key: "Profit", label: "Profit", better: "max" }, { key: "CS", label: "CS", better: "max" },
+        { key: "PS", label: "PS", better: "max" }, { key: "W", label: "W", better: "max" },
+        { key: "DWL", label: "DWL", better: "min" }
+    ];
+    const bestFor = {};
+    metrics.forEach(m => {
+        const vals = modes.map(mode => results[mode][m.key]);
+        bestFor[m.key] = m.better === "max" ? Math.max(...vals) : Math.min(...vals);
+    });
+    const rows = modes.map(mode => {
+        const t = results[mode];
+        const cells = metrics.map(m => {
+            const val = t[m.key], best = Math.abs(val - bestFor[m.key]) < 0.0001;
+            return `<td${best ? ' class="compare-best"' : ""}>${formatNumber(val)}</td>`;
+        }).join("");
+        return `<tr><td class="compare-mode-name">${labels[mode]}</td>${cells}</tr>`;
+    }).join("");
+    document.getElementById("compare-results").innerHTML = `
+        <div class="compare-weff-note">W_eff (benchmark при P=MC): <strong>${formatNumber(results.pd1.W_eff)}</strong></div>
+        <div class="compare-table-wrap">
+            <table class="compare-table">
+                <thead><tr><th>Режим</th>${metrics.map(m => `<th>${m.label}</th>`).join("")}</tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+        <div class="compare-chart-wrap"><div class="chart-title">CS / PS / W / DWL по режимам</div><canvas id="compare-canvas"></canvas></div>`;
+    if (compareChart) { compareChart.destroy(); compareChart = null; }
+    compareChart = new Chart(document.getElementById("compare-canvas").getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: ["Uniform", "PD1", "PD2", "PD3"],
+            datasets: [
+                { label: "CS",  data: modes.map(m => results[m].CS),  backgroundColor: "#86efac", borderColor: "#22c55e", borderWidth: 1.5, borderRadius: 4 },
+                { label: "PS",  data: modes.map(m => results[m].PS),  backgroundColor: "#93c5fd", borderColor: "#3b82f6", borderWidth: 1.5, borderRadius: 4 },
+                { label: "W",   data: modes.map(m => results[m].W),   backgroundColor: "#c4b5fd", borderColor: "#8b5cf6", borderWidth: 1.5, borderRadius: 4 },
+                { label: "DWL", data: modes.map(m => results[m].DWL), backgroundColor: "#fca5a5", borderColor: "#ef4444", borderWidth: 1.5, borderRadius: 4 }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: "top" } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+
+function formatNumber(value) {
+    if (typeof value !== "number") return value ?? "—";
+    if (Number.isInteger(value)) return value.toString();
+    return value.toFixed(2);
 }
 
 function switchTab(tabId) {
@@ -509,16 +1142,37 @@ function switchTab(tabId) {
     tabContents.forEach(c => c.classList.toggle("active", c.id === tabId));
 }
 
-pricingModeSelect.addEventListener("change", () => renderPricingParams(pricingModeSelect.value));
-addBuyerBtn.addEventListener("click", addBuyer);
-runBtn.addEventListener("click", runSimulation);
-downloadBtn.addEventListener("click", downloadReport);
+
+document.getElementById("pricing-mode-a").addEventListener("change", (e) => { renderPricingParams(e.target.value, "a"); renderBattlefieldWaiting(); });
+document.getElementById("pricing-mode-b").addEventListener("change", (e) => { renderPricingParams(e.target.value, "b"); renderBattlefieldWaiting(); });
+
+addBuyerBtn.addEventListener("click",      () => { addBuyer(null); saveState(); setDirty(); });
+runBtn.addEventListener("click",           runSimulation);
+downloadBtn.addEventListener("click",      downloadReport);
+compareBtn.addEventListener("click",       runComparison);
+saveSnapshotBtn.addEventListener("click",  saveSnapshot);
+snapClearBtn.addEventListener("click",     clearSnapshots);
 tabButtons.forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
+advancedToggle.addEventListener("change",  e => toggleAdvancedMode(e.target.checked));
 
 toggleReportBtn.addEventListener("click", () => {
     const hidden = resultBox.classList.toggle("hidden");
     toggleReportBtn.textContent = hidden ? "▶ Показать текстовый отчёт" : "▼ Скрыть текстовый отчёт";
 });
 
-renderPricingParams("uniform");
-addBuyer();
+document.querySelectorAll(".scenario-btn").forEach(btn => {
+    btn.addEventListener("click", () => loadScenario(btn.dataset.scenario));
+});
+
+const controlsPanel = document.querySelector(".controls");
+controlsPanel.addEventListener("input",  () => { saveState(); setDirty(); });
+controlsPanel.addEventListener("change", () => { saveState(); setDirty(); });
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+renderPricingParams("uniform", "a");
+renderPricingParams("uniform", "b");
+
+if (!loadSavedState()) {
+    addBuyer(null);
+}
