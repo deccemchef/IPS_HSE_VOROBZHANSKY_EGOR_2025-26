@@ -407,3 +407,76 @@ button { width: 100%; padding: 10px 12px; font-size: 15px; border-radius: 8px; }
 @media (max-width: 600px) {
     .guide-metrics-grid { grid-template-columns: 1fr 1fr; }
 }
+
+.theory-insight {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 20px;
+    font-size: 15px;
+    color: #1e3a8a;
+    line-height: 1.65;
+}
+
+.theory-example {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 20px;
+}
+.theory-example-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+.theory-example p { font-size: 15px; line-height: 1.6; margin: 8px 0; }
+
+.theory-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 10px 0;
+}
+.theory-table th {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #e2e8f0;
+}
+.theory-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1f2937;
+}
+
+.compare-theory-table-wrap { overflow-x: auto; margin-top: 16px; }
+.compare-theory-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 520px;
+}
+.compare-theory-table th {
+    background: #f1f5f9;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+.compare-theory-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1f2937;
+    font-size: 14px;
+}
+.compare-theory-table tbody tr:hover { background: #f8fafc; }
+.ctt-good { color: #166534; font-weight: 700; }
+.ctt-bad  { color: #9f1239; font-weight: 700; }

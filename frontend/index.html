@@ -72,7 +72,6 @@
                     <div class="guide-mode-formula">T(q) = p · q</div>
                     <div class="guide-mode-insight">Простейший режим. Часть покупателей, чья ценность ниже p, не купят ничего → возникает DWL.</div>
                 </div>
-
                 <div class="guide-mode-card guide-mode-pd1">
                     <div class="guide-mode-header">
                         <span class="guide-mode-badge">PD1</span>
@@ -83,24 +82,22 @@
                     <div class="guide-mode-formula">T(q) = V(q) — вся ценность</div>
                     <div class="guide-mode-insight">Максимальный Profit, CS = 0, DWL = 0. Теоретический предел — в реальности недостижим.</div>
                 </div>
-
                 <div class="guide-mode-card guide-mode-pd2">
                     <div class="guide-mode-header">
                         <span class="guide-mode-badge">PD2</span>
                         <span class="guide-mode-aka">Двухчастный тариф</span>
                     </div>
-                    <p>Покупатель платит фиксированный взнос <strong>F</strong> при входе, плюс цену <strong>p</strong> за каждую единицу. Если не платит F — не покупает вообще.</p>
+                    <p>Покупатель платит фиксированный взнос <strong>F</strong> при входе, плюс цену <strong>p</strong> за каждую единицу.</p>
                     <div class="guide-mode-param"><strong>Параметры:</strong> F — взнос, p — цена за единицу</div>
                     <div class="guide-mode-formula">T(q) = F + p · q, если q &gt; 0</div>
                     <div class="guide-mode-insight">Через F фирма изымает часть CS. Чем меньше p — тем больше покупают, но нужен баланс с F.</div>
                 </div>
-
                 <div class="guide-mode-card guide-mode-pd3">
                     <div class="guide-mode-header">
                         <span class="guide-mode-badge">PD3</span>
                         <span class="guide-mode-aka">Третья степень</span>
                     </div>
-                    <p>Фирма делит покупателей на сегменты A, B, C и назначает каждому сегменту свою цену. Покупатели из разных сегментов платят по-разному за одно и то же.</p>
+                    <p>Фирма делит покупателей на сегменты A, B, C и назначает каждому сегменту свою цену.</p>
                     <div class="guide-mode-param"><strong>Параметры:</strong> pA, pB, pC — цены по сегментам</div>
                     <div class="guide-mode-formula">T(q) = p[сегмент] · q</div>
                     <div class="guide-mode-insight">Сегмент с меньшей эластичностью — выше цена. Позволяет извлечь больше, чем Uniform.</div>
@@ -175,7 +172,6 @@
 
             <section class="panel controls">
 
-                <!-- Сценарии -->
                 <div class="scenarios-section">
                     <h2>Готовые сценарии</h2>
                     <div class="scenarios-grid">
@@ -318,10 +314,7 @@
                     <div class="compare-params-grid">
                         <div class="compare-mode-params">
                             <div class="compare-mode-label">Uniform</div>
-                            <div class="field">
-                                <label>p</label>
-                                <input type="number" id="cmp-uniform-p" value="4" min="0" step="0.1">
-                            </div>
+                            <div class="field"><label>p</label><input type="number" id="cmp-uniform-p" value="4" min="0" step="0.1"></div>
                         </div>
                         <div class="compare-mode-params">
                             <div class="compare-mode-label">PD1</div>
@@ -329,29 +322,14 @@
                         </div>
                         <div class="compare-mode-params">
                             <div class="compare-mode-label">PD2</div>
-                            <div class="field">
-                                <label>F</label>
-                                <input type="number" id="cmp-pd2-F" value="5" min="0" step="0.1">
-                            </div>
-                            <div class="field">
-                                <label>p</label>
-                                <input type="number" id="cmp-pd2-p" value="3" min="0" step="0.1">
-                            </div>
+                            <div class="field"><label>F</label><input type="number" id="cmp-pd2-F" value="5" min="0" step="0.1"></div>
+                            <div class="field"><label>p</label><input type="number" id="cmp-pd2-p" value="3" min="0" step="0.1"></div>
                         </div>
                         <div class="compare-mode-params">
                             <div class="compare-mode-label">PD3</div>
-                            <div class="field">
-                                <label>pA</label>
-                                <input type="number" id="cmp-pd3-pA" value="3" min="0" step="0.1">
-                            </div>
-                            <div class="field">
-                                <label>pB</label>
-                                <input type="number" id="cmp-pd3-pB" value="5" min="0" step="0.1">
-                            </div>
-                            <div class="field">
-                                <label>pC</label>
-                                <input type="number" id="cmp-pd3-pC" value="7" min="0" step="0.1">
-                            </div>
+                            <div class="field"><label>pA</label><input type="number" id="cmp-pd3-pA" value="3" min="0" step="0.1"></div>
+                            <div class="field"><label>pB</label><input type="number" id="cmp-pd3-pB" value="5" min="0" step="0.1"></div>
+                            <div class="field"><label>pC</label><input type="number" id="cmp-pd3-pC" value="7" min="0" step="0.1"></div>
                         </div>
                     </div>
                     <button id="compare-btn">Сравнить все режимы</button>
@@ -377,7 +355,8 @@
                 <a href="#pd2">4.2. Вторая степень</a>
                 <a href="#pd3">4.3. Третья степень</a>
                 <a href="#metrics">5. Экономические показатели</a>
-                <a href="#connection">6. Связь теории с симулятором</a>
+                <a href="#comparison">6. Сравнение режимов</a>
+                <a href="#connection">7. Связь с симулятором</a>
             </aside>
 
             <main class="theory-content panel">
@@ -385,7 +364,9 @@
                 <section id="monopoly" class="theory-section">
                     <h2>1. Монополия</h2>
                     <p><strong>Монополия</strong> — рыночная структура, при которой товар предлагает один продавец без близких конкурентов. Монополист сталкивается со всем рыночным спросом.</p>
-                    <p>Монополист выбирает объём по условию <strong>MR = MC</strong>. По сравнению с конкурентным рынком: цена выше, объём меньше, возникают потери благосостояния <strong>DWL</strong>.</p>
+                    <p>В отличие от конкурентной фирмы, монополист понимает: чтобы продать больше, нужно снизить цену — причём для всех покупателей сразу. Поэтому <strong>предельная выручка MR меньше цены P</strong>: продав дополнительную единицу, фирма получает за неё P, но теряет часть выручки со всех предыдущих единиц из-за снижения цены.</p>
+                    <p class="formula">MR &lt; P при убывающем спросе</p>
+                    <p>Монополист выбирает объём по условию <strong>MR = MC</strong>, затем назначает цену по кривой спроса. По сравнению с конкурентным рынком: цена выше, объём меньше, возникают потери благосостояния <strong>DWL</strong> — сделки, выгодные обеим сторонам, не состоялись.</p>
                     <div class="graph-block">
                         <h3>График базовой монополии</h3>
                         <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
@@ -425,35 +406,64 @@
                             <text x="504" y="103" font-size="13" fill="#374151">Deadweight Loss</text>
                         </svg>
                     </div>
+                    <div class="theory-insight">
+                        <strong>Ключевая мысль.</strong> Монополист не максимизирует объём — он максимизирует прибыль. Из-за этого часть потенциально выгодных сделок не происходит: покупатели, чья готовность платить выше MC но ниже Pm, остаются без товара. Это и есть DWL — потерянная ценность, которая не досталась ни фирме, ни покупателям.
+                    </div>
                 </section>
 
                 <section id="notation" class="theory-section">
                     <h2>2. Основные обозначения</h2>
-                    <p><strong>MB(k)</strong> — предельная полезность k-й единицы товара.</p>
+                    <p><strong>MB(k)</strong> — предельная полезность k-й единицы товара: сколько покупатель готов заплатить именно за k-ю единицу.</p>
+                    <p>В модели используется линейный спрос: MB(k) = a − b·(k−1). Это значит — каждая следующая единица ценится на b меньше предыдущей.</p>
                     <p><strong>V(q)</strong> — суммарная ценность q единиц:</p>
                     <p class="formula">V(q) = MB(1) + MB(2) + ... + MB(q)</p>
                     <p><strong>T(q)</strong> — общий платёж покупателя за q единиц.</p>
                     <p><strong>U(q)</strong> — чистая полезность покупателя:</p>
                     <p class="formula">U(q) = V(q) − T(q)</p>
+                    <div class="theory-example">
+                        <div class="theory-example-title">Числовой пример</div>
+                        <p>Покупатель с параметрами <strong>a = 10, b = 2</strong>:</p>
+                        <table class="theory-table">
+                            <thead><tr><th>k</th><th>MB(k) = 10 − 2·(k−1)</th><th>V(k) — суммарно</th></tr></thead>
+                            <tbody>
+                                <tr><td>1</td><td>10</td><td>10</td></tr>
+                                <tr><td>2</td><td>8</td><td>18</td></tr>
+                                <tr><td>3</td><td>6</td><td>24</td></tr>
+                                <tr><td>4</td><td>4</td><td>28</td></tr>
+                                <tr><td>5</td><td>2</td><td>30</td></tr>
+                            </tbody>
+                        </table>
+                        <p>При цене p = 4 покупатель купит 4 единицы: MB(4) = 4 ≥ p, MB(5) = 2 &lt; p. Заплатит T = 4·4 = 16. Получит CS = V(4) − T = 28 − 16 = 12.</p>
+                    </div>
                 </section>
 
                 <section id="consumer-choice" class="theory-section">
                     <h2>3. Выбор покупателя</h2>
                     <p>Покупатель перебирает варианты q = 0, 1, 2, ... и выбирает тот объём, который максимизирует чистую полезность.</p>
                     <p class="formula">q* = argmax U(q) = argmax [V(q) − T(q)]</p>
+                    <p>Рациональный покупатель покупает дополнительную единицу тогда и только тогда, когда её предельная ценность превышает предельный платёж за неё. При единой цене p это условие: <strong>MB(k) ≥ p</strong>.</p>
+                    <div class="theory-insight">
+                        <strong>Важно.</strong> Покупатель может отказаться от покупки вообще (q = 0), если U(0) = 0 выгоднее любого положительного объёма. Именно это происходит с покупателями PD2 у которых CS меньше взноса F.
+                    </div>
                 </section>
 
                 <section id="price-discrimination" class="theory-section">
                     <h2>4. Ценовая дискриминация</h2>
                     <p><strong>Ценовая дискриминация</strong> — продажа одного товара разным покупателям по разным ценам, не объясняемым разницей в издержках.</p>
-                    <p>Условия: рыночная власть фирмы, возможность различать покупателей, ограничение перепродажи между группами.</p>
+                    <p>Три необходимых условия:</p>
+                    <ul>
+                        <li><strong>Рыночная власть</strong> — фирма должна иметь возможность назначать цену выше MC.</li>
+                        <li><strong>Различимость покупателей</strong> — фирма должна знать или угадывать готовность платить.</li>
+                        <li><strong>Ограничение арбитража</strong> — покупатели не должны перепродавать товар друг другу.</li>
+                    </ul>
+                    <p>Цель ценовой дискриминации — изъять как можно больше потребительского излишка, превратив его в прибыль фирмы.</p>
                 </section>
 
                 <section id="pd1" class="theory-section">
                     <h2>4.1. Ценовая дискриминация первой степени</h2>
                     <p>Фирма знает точную готовность платить каждого покупателя за каждую единицу и назначает индивидуальную цену. Потребительский излишек полностью переходит к фирме.</p>
                     <p class="formula">T(q) = V(q)</p>
-                    <p>Фирма продаёт до Q*, где цена (MB) сравнивается с MC. Объём продаж = конкурентному — потерь благосостояния нет.</p>
+                    <p>Фирма продаёт до Q*, где MB сравнивается с MC. Объём продаж совпадает с конкурентным — потерь благосостояния нет. Весь выигрыш от торговли забирает фирма.</p>
                     <div class="graph-block">
                         <h3>График PD1</h3>
                         <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
@@ -480,13 +490,16 @@
                             <text x="504" y="63" font-size="13" fill="#374151">PS / Profit (фирма)</text>
                         </svg>
                     </div>
+                    <div class="theory-insight">
+                        <strong>Ключевой вывод.</strong> PD1 — идеальная стратегия для фирмы: максимальный Profit, DWL = 0 (эффективно для общества в целом), но CS = 0 (покупатели ничего не выигрывают). На практике невозможна — фирма никогда не знает точную готовность платить каждого.
+                    </div>
                 </section>
 
                 <section id="pd2" class="theory-section">
                     <h2>4.2. Ценовая дискриминация второй степени</h2>
-                    <p>Фирма предлагает двухчастный тариф: фиксированный взнос F плюс цена за единицу p.</p>
+                    <p>Фирма предлагает двухчастный тариф: фиксированный взнос F плюс цена за единицу p. Покупатель сам выбирает объём — но сначала должен заплатить взнос.</p>
                     <p class="formula">T(0) = 0 &nbsp;&nbsp; T(q &gt; 0) = F + p · q</p>
-                    <p>Через p фирма влияет на объём покупки, через F — изымает часть потребительского излишка.</p>
+                    <p>Через p фирма влияет на объём покупки (чем ниже p — тем больше покупают). Через F — изымает часть потребительского излишка. Покупатель не купит ничего, если его CS при данном p меньше F.</p>
                     <div class="graph-block">
                         <h3>График PD2</h3>
                         <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
@@ -515,13 +528,16 @@
                             <text x="12" y="364" font-size="13" fill="#dc2626">MC</text>
                         </svg>
                     </div>
+                    <div class="theory-insight">
+                        <strong>Ключевой вывод.</strong> PD2 — компромисс: фирма берёт взнос F (частично изымая CS), но устанавливает низкую p (стимулируя покупки). Оптимально: снизить p до MC и поставить F = CS при этой цене. Примеры: абонемент в фитнес + цена за занятие, подписка + цена за единицу контента.
+                    </div>
                 </section>
 
                 <section id="pd3" class="theory-section">
                     <h2>4.3. Ценовая дискриминация третьей степени</h2>
-                    <p>Фирма делит покупателей на наблюдаемые сегменты и назначает каждому сегменту свою цену.</p>
-                    <p class="formula">T(q) = p[segment] · q</p>
-                    <p>Сегмент с менее эластичным спросом получает более высокую цену. В модели — сегменты A, B, C.</p>
+                    <p>Фирма делит покупателей на наблюдаемые сегменты и назначает каждому сегменту свою цену. Покупатели внутри сегмента платят одинаково.</p>
+                    <p class="formula">T(q) = p[сегмент] · q</p>
+                    <p>Оптимальная цена для каждого сегмента определяется его эластичностью спроса: сегмент с менее эластичным спросом (меньше реагирует на цену) платит больше. Примеры: студенческие скидки, разные цены в разных странах, бизнес и эконом-класс в авиации.</p>
                     <div class="graph-block">
                         <h3>График PD3 — три сегмента</h3>
                         <svg class="theory-graph" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
@@ -561,29 +577,94 @@
                             <text x="545" y="435" font-size="14" font-weight="700" fill="#374151">C</text>
                         </svg>
                     </div>
+                    <div class="theory-insight">
+                        <strong>Ключевой вывод.</strong> PD3 даёт больше прибыли чем Uniform, но меньше чем PD1. DWL сохраняется (не все выгодные сделки случаются), но перераспределение CS более тонкое. Часть покупателей выигрывает от низкой цены в своём сегменте.
+                    </div>
                 </section>
 
                 <section id="metrics" class="theory-section">
                     <h2>5. Экономические показатели</h2>
-                    <p><strong>Revenue</strong> — выручка фирмы: сумма всех платежей.</p>
-                    <p><strong>VarCost</strong> — переменные издержки: mc · Q.</p>
+                    <p><strong>Revenue</strong> — выручка фирмы: сумма всех платежей. Revenue = Σ T(q).</p>
+                    <p><strong>VarCost</strong> — переменные издержки: MC · Q.</p>
                     <p><strong>Profit</strong> — прибыль:</p>
                     <p class="formula">Profit = Revenue − VarCost</p>
-                    <p><strong>CS</strong> — consumer surplus, потребительский излишек.</p>
-                    <p><strong>PS</strong> — producer surplus, производительный излишек (= Profit в этой модели).</p>
+                    <p><strong>CS</strong> — consumer surplus, потребительский излишек: то, что покупатели получили сверх уплаченного.</p>
+                    <p class="formula">CS = Σ [V(q) − T(q)]</p>
                     <p><strong>W</strong> — общественное благосостояние:</p>
-                    <p class="formula">W = CS + PS</p>
-                    <p><strong>W_eff</strong> — эффективное благосостояние при конкурентной цене P = MC.</p>
-                    <p><strong>DWL</strong> — потери благосостояния:</p>
-                    <p class="formula">DWL = W_eff − W</p>
+                    <p class="formula">W = CS + PS = CS + Profit</p>
+                    <p><strong>W_eff</strong> — эффективное благосостояние при P = MC. Это <em>теоретический максимум</em> W: при конкурентной цене все выгодные сделки состоятся.</p>
+                    <p><strong>DWL</strong> — deadweight loss, потери благосостояния:</p>
+                    <p class="formula">DWL = W_eff − W ≥ 0</p>
+                    <div class="theory-insight">
+                        <strong>Интуиция DWL.</strong> DWL — это ценность сделок, которые <em>могли бы</em> состояться (покупатель ценит товар выше MC), но не состоялись из-за высокой цены. Это потеря не перешла ни к фирме, ни к покупателю — она просто исчезла. Чем ближе стратегия к PD1, тем меньше DWL.
+                    </div>
+                </section>
+
+                <section id="comparison" class="theory-section">
+                    <h2>6. Сравнение режимов</h2>
+                    <p>Как четыре стратегии соотносятся между собой при одном и том же наборе покупателей:</p>
+                    <div class="compare-theory-table-wrap">
+                        <table class="compare-theory-table">
+                            <thead>
+                                <tr>
+                                    <th>Режим</th>
+                                    <th>Profit</th>
+                                    <th>CS</th>
+                                    <th>W</th>
+                                    <th>DWL</th>
+                                    <th>Реализм</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Uniform</strong></td>
+                                    <td>Средний</td>
+                                    <td>Есть</td>
+                                    <td>Ниже W_eff</td>
+                                    <td class="ctt-bad">Высокий</td>
+                                    <td>✅ Легко</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PD1</strong></td>
+                                    <td class="ctt-good">Максимум</td>
+                                    <td class="ctt-bad">= 0</td>
+                                    <td class="ctt-good">= W_eff</td>
+                                    <td class="ctt-good">= 0</td>
+                                    <td>❌ Теория</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PD2</strong></td>
+                                    <td>Высокий</td>
+                                    <td>Мало</td>
+                                    <td>Близко к W_eff</td>
+                                    <td>Низкий</td>
+                                    <td>✅ Возможно</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>PD3</strong></td>
+                                    <td>Выше Uniform</td>
+                                    <td>Зависит</td>
+                                    <td>Зависит</td>
+                                    <td>Средний</td>
+                                    <td>✅ Часто</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top:16px">По прибыли фирмы: <strong>PD1 ≥ PD2 ≥ PD3 ≥ Uniform</strong></p>
+                    <p>По общественному благосостоянию: <strong>PD1 = W_eff ≥ остальные</strong></p>
+                    <p>По выгоде для покупателей: <strong>Uniform ≥ PD3 ≥ PD2 ≥ PD1</strong></p>
+                    <div class="theory-insight">
+                        <strong>Парадокс PD1.</strong> Первая степень дискриминации — самая «жестокая» для покупателей (CS = 0), но самая эффективная для общества (DWL = 0). Uniform — самая «мягкая», но создаёт наибольшие потери. Это означает, что интересы фирмы и общества не всегда противоречат друг другу.
+                    </div>
                 </section>
 
                 <section id="connection" class="theory-section">
-                    <h2>6. Связь теории с симулятором</h2>
-                    <p>Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя задаётся функция спроса, строится функция платежа <strong>T(q)</strong>, покупатель выбирает объём, максимизируя полезность.</p>
+                    <h2>7. Связь теории с симулятором</h2>
+                    <p>Симулятор переводит микроэкономические идеи в вычислимую форму. Для каждого покупателя задаётся функция спроса MB(k), строится функция платежа T(q) согласно выбранному режиму, покупатель выбирает q*, максимизируя U(q) = V(q) − T(q).</p>
                     <p>Индивидуальные решения агрегируются в показатели фирмы и рынка: Q, Revenue, Profit, CS, PS, W, DWL.</p>
-                    <p>Раздел <strong>«Сравнение режимов»</strong> позволяет запустить все четыре режима на одном наборе покупателей и увидеть, как меняются CS, PS, W и DWL при разных стратегиях ценообразования.</p>
-                    <p>Раздел <strong>«Готовые сценарии»</strong> содержит предварительно настроенные примеры, соответствующие типичным задачам из учебников по микроэкономике.</p>
+                    <p>Раздел <strong>«Сравнение режимов»</strong> позволяет запустить все четыре режима на одном наборе покупателей и увидеть таблицу из раздела 6 в числах — для конкретных покупателей которых ты настроил.</p>
+                    <p>Раздел <strong>«Снапшоты»</strong> позволяет сохранять результаты разных стратегий и сравнивать их — как в таблице выше, но с реальными числами из симуляции.</p>
                 </section>
 
             </main>
